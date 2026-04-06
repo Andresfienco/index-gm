@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planificación Académica - Unidad Educativa Particular García Moreno</title>
+    <title>Planificación Académica - Unidad Educativa Particular "García Moreno"</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
+    <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
 
     <style>
         :root {
@@ -53,14 +55,14 @@
             color: var(--primary); cursor: pointer; font-weight: bold; background: none; border: none;
         }
 
-        #eventModal .modal-content, #studentHistoryModal .modal-content, #disciplineHistoryModal .modal-content { max-width: 500px; text-align: center; }
+        #eventModal .modal-content, #studentHistoryModal .modal-content, #disciplineHistoryModal .modal-content, #manageStudentsModal .modal-content { max-width: 500px; text-align: center; }
         #eventModal input, #eventModal textarea { 
             width: 100%; padding: 10px; margin-top: 8px; margin-bottom: 15px;
             border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-family: inherit; font-size: 14px;
         }
         #eventModal textarea { height: 100px; resize: vertical; }
 
-        .tabs { display: flex; gap: 5px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px; }
+        .tabs { display: flex; gap: 5px; margin-bottom: 5px; overflow-x: auto; padding-bottom: 5px; }
         .tab-btn {
             flex: 1; padding: 10px; border: none; border-radius: 4px;
             background-color: var(--surface); color: var(--primary); 
@@ -73,7 +75,7 @@
         .tab-content.active { display: block; }
         
         .controls, .schedule-grid { display: flex; flex-direction: column; gap: 10px; margin-bottom: 20px; }
-        input[type="file"], input[type="text"], select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
+        input[type="file"], input[type="text"], input[type="date"], input[type="time"], select { padding: 10px; border: 1px solid #ccc; border-radius: 4px; width: 100%; box-sizing: border-box; }
         
         .course-buttons { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; }
         .course-btn {
@@ -84,8 +86,8 @@
         .course-btn:hover { background: #e3d3b8; transform: scale(1.05); }
         .course-btn.active { background: var(--primary); color: white; border-color: var(--primary); transform: scale(1.05); box-shadow: 0 2px 4px rgba(0,0,0,0.2); }
         
-        /* Botones de calendario AZUL CLARO dinámicos */
         .has-class-today { background-color: #cce5ff !important; color: #004085 !important; border-color: #b8daff !important; }
+        .has-topics-selected { background-color: #cce5ff !important; color: #004085 !important; border-color: #b8daff !important; }
 
         .course-schedule { border: 1px solid #eee; padding: 10px; border-radius: 6px; background: #fafafa; }
         .course-schedule h4 { margin: 0 0 10px 0; color: var(--primary); }
@@ -106,9 +108,11 @@
         .empty-slot { background: #f9f9f9 !important; border-left: 2px solid #eee; cursor: default; }
         .empty-slot:hover { transform: none; }
         
-        .assigned-slot { background-color: var(--surface); }
+        .assigned-slot { background-color: var(--surface); } 
         .current-slot { background-color: #e8f5e9 !important; border-left-color: #2ecc71 !important; transform: scale(1.01); box-shadow: 0 4px 8px rgba(46, 204, 113, 0.2) !important; }
         .current-slot .hour-badge { color: #27ae60 !important; }
+        
+        .other-day-slot { background-color: #f3e5f5 !important; border-left-color: #ce93d8 !important; }
 
         .topic-card { border: 1px left solid #e0e0e0; border-left: 5px solid var(--secondary); border-radius: 6px; padding: 15px; margin-bottom: 15px; background: var(--bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05); transition: background 0.5s; }
         .topic-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px; }
@@ -138,7 +142,6 @@
         .btn-success { background: #2ecc71; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
         .btn-info { background: #3498db; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px;}
         .btn-delete { background: #e74c3c; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; }
-        .btn-whatsapp { background: #25D366; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px;}
 
         .especie-item { background-color: #e3f2fd !important; border-left-color: #3498db !important; }
 
@@ -160,27 +163,21 @@
         .btn-clear { background: #e74c3c; color: white; border: none; padding: 8px 12px; border-radius: 4px; cursor: pointer; font-weight: bold; margin-top: 10px;}
         .success-msg { color: var(--success); font-weight: bold; margin-bottom: 5px; }
         .upload-box { border: 1px dashed #ccc; padding: 15px; border-radius: 6px; background: white; }
+
+        .tema-tratado-item textarea, .area-tema-item textarea { font-family: Arial, sans-serif; resize: vertical; }
+        
+        .manage-btn-group { display:flex; flex-direction:column; gap:5px; margin-left:auto; }
     </style>
 </head>
 <body>
 
-<button class="config-btn" onclick="document.getElementById('configModal').style.display='flex'" title="Configuración">⚙️</button>
+<button class="config-btn" onclick="toggleConfigModal()" title="Configuración">⚙️</button>
 
 <div id="configModal" class="modal">
-    <div class="modal-content">
-        <button class="close-modal" onclick="document.getElementById('configModal').style.display='none'">×</button>
-        <h3 style="color: var(--primary); margin-top: 0;">Configuración del Sistema</h3>
-        
-        <div class="controls upload-box" style="margin-bottom: 15px; background: #fafafa;">
-            <label><strong>Datos Generales del Docente:</strong></label>
-            <input type="text" id="teacherNameInput" placeholder="Nombre del Docente" style="margin-bottom: 5px;">
-            <input type="text" id="teacherPhoneInput" placeholder="Teléfono personal (Ej: 099...)" style="margin-bottom: 15px;">
-
-            <label><strong>Datos del Inspector General:</strong></label>
-            <input type="text" id="inspectorNameInput" placeholder="Nombre del Inspector (Ej: Ing. Enrique Gutiérrez)" style="margin-bottom: 5px;">
-            <input type="text" id="inspectorPhoneInput" placeholder="Teléfono del Inspector (Ej: 099...)" style="margin-bottom: 5px;">
-        </div>
-
+    <div class="modal-content" style="max-width: 650px;">
+        <button class="close-modal" onclick="toggleConfigModal()">×</button>
+        <h3 style="color: var(--primary); margin-top: 0;">Configuración del Sistema</h3> 
+        <h6> <i> Developed by: Andrés Fienco.</i> </h6>
         <div class="controls upload-box" id="uploadSectionPlan">
             <label><strong>Paso 1A:</strong> Cargar archivo CSV de Planificación</label>
             <input type="file" id="csvFileInput" accept=".csv">
@@ -196,11 +193,43 @@
             <input type="file" id="csvCronogramaInput" accept=".csv">
         </div>
 
+        <div class="controls upload-box" style="margin-top: 15px; margin-bottom: 15px; background: #fafafa;">
+            <label><strong>Datos Generales del Docente:</strong></label>
+            <input type="text" id="teacherNameInput" placeholder="Nombre del Docente, (Ej: Ing. Carlos Andrés Fienco)" style="margin-bottom: 5px;">
+            <input type="text" id="teacherPhoneInput" placeholder="Teléfono personal (Ej: 099...)" style="margin-bottom: 15px;">
+
+            <label><strong>Datos del Inspector General:</strong></label>
+            <input type="text" id="inspectorNameInput" placeholder="Nombre del Inspector (Ej: Ing. Enrique Gutiérrez)" style="margin-bottom: 5px;">
+            <input type="text" id="inspectorPhoneInput" placeholder="Teléfono del Inspector (Ej: 099...)" style="margin-bottom: 5px;">
+        </div>
+
         <div id="scheduleConfigContainer" style="display:none; margin-top: 20px;">
-            <p><strong>Paso 2:</strong> Selecciona días/horas y el número del Tutor (WhatsApp) por cada curso.</p>
+            <p><strong>Paso 2:</strong> Selecciona días/horas, el número del Tutor, y gestiona estudiantes o temario.</p>
+            
             <div id="courseSchedules" class="schedule-grid"></div>
             <button class="btn-action" style="width: 100%; margin-top: 10px;" onclick="saveSchedules()">Guardar Configuración Completa</button>
         </div>
+    </div>
+</div>
+
+<div id="manageStudentsModal" class="modal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="document.getElementById('manageStudentsModal').style.display='none'">×</button>
+        <h3 id="manageStudentsTitle" style="color: var(--primary); margin-top: 0;">Administrar Estudiantes</h3>
+        <div style="display:flex; gap:10px; margin-bottom: 15px;">
+            <input type="text" id="newStudentName" placeholder="Nombres del estudiante..." style="flex:1;">
+            <button class="btn-success" onclick="addNewStudent()">Agregar</button>
+        </div>
+        <div id="manageStudentsList" style="max-height: 300px; overflow-y: auto; text-align: left;"></div>
+    </div>
+</div>
+
+<div id="manageTopicsModal" class="modal">
+    <div class="modal-content" style="max-width: 700px;">
+        <button class="close-modal" onclick="document.getElementById('manageTopicsModal').style.display='none'">×</button>
+        <h3 id="manageTopicsTitle" style="color: var(--primary); margin-top: 0;">Administrar Temario</h3>
+        <div id="manageTopicsList" style="max-height: 400px; overflow-y: auto; text-align: left; margin-bottom: 15px;"></div>
+        <button class="btn-success" style="width: 100%; padding: 10px; font-size:16px;" onclick="saveTopicsChanges()">Guardar Cambios</button>
     </div>
 </div>
 
@@ -246,7 +275,8 @@
 </div>
 
 <div class="container">
-    <h2>Unidad Educativa Particular García Moreno</h2>
+    <h2 onclick="alert('Developed by: ⛩️ Andrés Fienco')" title="Ver créditos">Unidad Educativa Particular</br>"García Moreno"</h2>
+    <center> <h6> <i> Developed by: Andrés Fienco.</i> </h6></center>
     
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('dailyView')">1. Diario</button>
@@ -254,9 +284,19 @@
         <button class="tab-btn" onclick="switchTab('missingTasks')">3. Tareas</button>
         <button class="tab-btn" onclick="switchTab('disciplineView')">4. Reportes</button>
     </div>
+    </br>
+    <div style="display: flex; justify-content: center; margin-bottom: 25px; margin-top: -10px;">
+        <button class="tab-btn" style="max-width: 250px;" onclick="switchTab('documentationView')">⚡︎ Gen ⚡︎</button>
+    </div>
 
     <div id="dailyView" class="tab-content active">
-        <h3 id="dailyDateTitle" style="color: var(--primary); text-align: center; border-bottom: 2px solid var(--surface); padding-bottom: 10px;"></h3>
+        
+        <div style="display: flex; justify-content: center; align-items: center; gap: 15px; border-bottom: 2px solid var(--surface); padding-bottom: 10px; margin-bottom: 15px;">
+            <button onclick="changeDay(-1)" style="background:none; border:none; font-size: 24px; cursor: pointer; color: var(--primary);">◀</button>
+            <h3 id="dailyDateTitle" onclick="resetDay()" style="color: var(--primary); margin: 0; cursor: pointer; user-select: none;" title="Volver a hoy"></h3>
+            <button onclick="changeDay(1)" style="background:none; border:none; font-size: 24px; cursor: pointer; color: var(--primary);">▶</button>
+        </div>
+
         <div id="dailyGrid" class="daily-grid"></div>
         <div id="unassignedGrid" class="daily-grid" style="margin-top: 20px;">
             <h4 style="color: #666; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Temas del día (Sin hora específica configurada)</h4>
@@ -264,11 +304,11 @@
 
         <div id="docenteCalendarSection" style="margin-top: 50px; border-top: 3px dashed var(--surface); padding-top: 30px;">
             <h3 id="calendarSectionTitle" style="color: var(--primary); text-align: center; font-size: 24px;">📅 Calendario Docente</h3>
-            <p style="text-align: center; color: #666; font-size: 13px; margin-top: -10px;">Planificación y eventos del docente. Selecciona qué vista deseas cargar en el calendario.</p>
+            <p id="docenteCalendarSubtitle" style="text-align: center; color: #666; font-size: 13px; margin-top: -10px;">Planificación y eventos del docente</p>
             <div id="courseButtonsCal" class="course-buttons" style="justify-content: center;"></div>
             
             <div style="text-align: center; margin-bottom: 10px; display: none;" id="btnStartWeekContainer">
-                <button class="btn-info" onclick="startWeekCount()">Empezar Conteo de Semanas</button>
+                <button id="btnStartWeek" class="btn-info" onclick="toggleWeekCount()">Empezar Conteo de Semanas</button>
             </div>
             
             <div id="calendar"></div>
@@ -278,10 +318,12 @@
                 <h3 style="color: var(--primary); margin-bottom: 15px;">🛠️ Enlaces Utilitarios</h3>
                 <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
                     <a href="https://uepgarciamoreno.runacode.com/public/indexmateriasmostrar/1" target="_blank" class="course-btn" style="text-decoration: none;">🌐 RUNACHAY</a>
-                    <a href="https://drive.google.com/drive/folders/1VlBce8c0EG0xOT9ssLr7pC2k3cDlBhGH?usp=sharing" target="_blank" class="course-btn" style="text-decoration: none;">📁 UTILITARIOS</a>
+                    <a href="https://mega.nz/folder/PiY1gagB#NLoz2FBEJ-N9BBfxY5jPwA" target="_blank" class="course-btn" style="text-decoration: none;">📁 UTILITARIOS</a>
                     <a href="https://docs.google.com/spreadsheets/d/1nKd2riz7ORKXx7UOtFXRbq0NZs94ddKRtcYqX6IiGrE/edit?usp=drive_link" target="_blank" class="course-btn" style="text-decoration: none;">💳 PAGOS</a>
+                    <a href="https://chat.whatsapp.com/KrObqyyWYUK44sztvHg4Rk?mode=gi_t" target="_blank" class="course-btn" style="text-decoration: none;">💬 COMUNICACIÓN</a>
                 </div>
             </div>
+
         </div>
     </div>
 
@@ -352,9 +394,149 @@
         </div>
     </div>
 
+    <div id="documentationView" class="tab-content">
+        <div class="course-buttons" style="justify-content: center; margin-bottom: 10px;">
+            <button class="course-btn" id="btnDocEjemplos" onclick="switchDocTab('ejemplosView', this)">EJEMPLOS</button>
+            <button class="course-btn" id="btnDocPlanificacion" onclick="switchDocTab('planificacionView', this)">PLANIFICACIÓN</button>
+        </div>
+        <div class="course-buttons" style="justify-content: center; margin-bottom: 20px;">
+            <button class="course-btn active" id="btnDocReuniones" onclick="switchDocTab('reunionesView', this)">REUNIONES</button>
+            <button class="course-btn" id="btnDocArea" onclick="switchDocTab('areaView', this)">ÁREA</button>
+            <button class="course-btn" id="btnDocAlertas" onclick="switchDocTab('alertasView', this)">ALERTAS</button>
+        </div>
+        
+        <div id="reunionesView">
+            <div class="task-form">
+                <h4 style="margin-top:0; color: var(--primary);">📝 Generar Informe de Reunión</h4>
+                
+                <input type="text" id="reunionTema" placeholder="Tema de la reunión" style="margin-bottom: 10px;">
+                <input type="text" id="reunionDirigido" placeholder="Dirigido a (Ej. Autoridades, Padres de Familia...)" style="margin-bottom: 10px;">
+                
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Fecha:</label>
+                        <input type="date" id="reunionFecha">
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Hora de inicio:</label>
+                        <input type="time" id="reunionHoraInicio">
+                    </div>
+                </div>
+
+                <h4 style="color: var(--primary); border-bottom: 2px solid var(--surface); padding-bottom: 5px; margin-top: 20px;">TEMAS TRATADOS</h4>
+                
+                <div id="temasTratadosContainer">
+                    <div class="tema-tratado-item" style="background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 10px; position:relative;">
+                        <button onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px; background:none; border:none; color:red; cursor:pointer; font-weight:bold; font-size:16px;" title="Eliminar este tema">✖</button>
+                        <input type="text" class="tema-titulo" placeholder="Tema tratado" style="margin-bottom: 5px; font-weight: bold; width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <textarea class="tema-desc" placeholder="Descripción de lo tratado..." style="height: 50px; width: 100%; border: 1px solid #ccc; padding: 8px; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                
+                <button class="btn-info" onclick="addTemaTratado()" style="margin-bottom: 20px;">+ Agregar otro tema tratado</button>
+                
+                <div style="margin-bottom: 15px;">
+                    <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Hora que terminó:</label>
+                    <input type="time" id="reunionHoraFin" style="width: auto; display: block;">
+                </div>
+                
+                <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarReunionPerplexity()">Generar Informe con AI</button>
+            </div>
+        </div>
+        
+        <div id="areaView" style="display: none;">
+            <div class="tabs" style="margin-bottom: 10px;">
+                <button class="tab-btn active" id="btnAreaAgregar" onclick="switchAreaSubTab('areaAgregarView', this)">Agregar Temas</button>
+                <button class="tab-btn" id="btnAreaDetallar" onclick="switchAreaSubTab('areaDetallarView', this)">Detallar Informe</button>
+            </div>
+            
+            <div id="areaAgregarView" class="task-form">
+                <h4 style="margin-top:0; color: var(--primary);">Selecciona el Curso</h4>
+                <div id="areaCourseButtons" class="course-buttons"></div>
+                <div id="areaCompletedTopicsList" style="margin-top: 15px;"></div>
+            </div>
+
+            <div id="areaDetallarView" class="task-form" style="display: none;">
+                <input type="text" id="areaSubjectName" placeholder="Nombre de la materia" style="margin-bottom: 15px;">
+                
+                <div id="areaSelectedTopicsContainer"></div>
+                
+                <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 15px;" onclick="enviarAreaPerplexity()">Generar Informe con AI</button>
+                
+                <h4 style="color: var(--primary); margin-top: 25px; border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Vista Previa: Temas Escogidos para el Informe</h4>
+                <div id="areaPreviewContainer"></div>
+            </div>
+        </div>
+        
+        <div id="ejemplosView" style="display: none;">
+            <div class="task-form">
+                <h4 style="margin-top:0; color: var(--primary);">Selecciona el Curso para Ejemplos</h4>
+                <div id="ejemplosCourseButtons" class="course-buttons"></div>
+
+                <div id="ejemplosManager" style="display:none; margin-top: 15px;">
+                    <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Ejemplos</h4>
+                    <p style="font-weight: bold; margin-bottom: 10px;">Curso: <span id="ejemplosCourseLabel" style="color: var(--primary);"></span></p>
+                    
+                    <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Selecciona el tema:</label>
+                    <select id="ejemplosTopicSelect" style="width:100%; padding:10px; margin-bottom: 10px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;"></select>
+                    
+                    <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Información adicional (Opcional):</label>
+                    <textarea id="ejemplosInfoAdicional" placeholder="Ej: Que sean ejemplos prácticos para niños de 10 años...
+Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; height: 60px; margin-bottom: 10px; resize: vertical;"></textarea>
+                    
+                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarEjemplosPerplexity()">Generar Ejemplos con AI</button> </br></br>
+                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarEjemplosPerplexityt()">Generar Teoría con AI</button>
+                </div>
+ <div id="examenesManager" style="display:none; margin-top: 15px;">
+                    <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Ejemplo de Exámenes</h4>
+                    <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Contenido:</label>
+                    <textarea id="examenesContenido" placeholder="Pega aquí el contenido a evaluar..." style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; height: 80px; margin-bottom: 10px; resize: vertical;"></textarea>
+                    <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Ejemplo de pregunta:</label>
+                    <textarea id="examenesEjemplo" placeholder="Pega aquí un ejemplo de cómo quieres que sea la pregunta..." style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; height: 80px; margin-bottom: 10px; resize: vertical;"></textarea>
+                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; background-color: #8e44ad;" onclick="enviarExamenesPerplexity()">Generar Preguntas con AI</button>
+                </div>
+            </div>
+        </div>
+
+        <div id="planificacionView" style="display: none;">
+            <div class="task-form">
+                <h4 style="margin-top:0; color: var(--primary);">Selecciona el Curso para Planificar</h4>
+                <div id="planificacionCourseButtons" class="course-buttons"></div>
+
+                <div id="planificacionManager" style="display:none; margin-top: 15px;">
+                    <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Planificar</h4>
+                    <p style="font-weight: bold; margin-bottom: 10px;">Curso: <span id="planificacionCourseLabel" style="color: var(--primary);"></span></p>
+                    
+                    <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Selecciona el tema:</label>
+                    <select id="planificacionTopicSelect" style="width:100%; padding:10px; margin-bottom: 10px; border:1px solid #ccc; border-radius:4px; box-sizing:border-box;"></select>
+                    
+                    <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Detalle adicional (Opcional):</label>
+                    <textarea id="planificacionDetalle" placeholder="Ej: Enfocado en trabajo colaborativo y dinámicas..." style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; height: 60px; margin-bottom: 10px; resize: vertical;"></textarea>
+                    
+                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarPlanificacionPerplexity()">Generar Planificación con AI</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="alertasView" style="display: none;">
+            <div class="task-form">
+                <h4 style="margin-top:0; color: var(--primary);">Selecciona el Curso para Alertas</h4>
+                <div id="alertasCourseButtons" class="course-buttons"></div>
+
+                <div id="alertasManager" style="display:none; margin-top: 15px;">
+                    <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Análisis de Alertas</h4>
+                    <p style="font-weight: bold; margin-bottom: 10px;">Curso: <span id="alertasCourseLabel" style="color: var(--primary);"></span></p>
+                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarAlertasPerplexity()">Revisión con AI</button>
+                </div>
+            </div>
+        </div>
+        
+    </div>
+
 </div>
 
 <script>
+    // Variables Globales
     let planData = [];
     let headers = [];
     let studentsData = {}; 
@@ -366,6 +548,10 @@
     let customCalendarNotes = JSON.parse(localStorage.getItem('custom_calendar_notes')) || []; 
     let topicOverrides = JSON.parse(localStorage.getItem('topic_overrides')) || {}; 
     
+    // Variables de Área y Estudiantes
+    let areaSelectedTopics = {}; 
+    let currentManagingCourse = null;
+
     let reportCounter = JSON.parse(localStorage.getItem('report_counter')) || 1;
     let studentTaskCounters = JSON.parse(localStorage.getItem('student_task_counters')) || {}; 
     
@@ -374,10 +560,15 @@
     let currentCourseCalIndex = null; 
     let currentCourseTaskName = null;
     let currentCourseDisciplineName = null;
+    let currentCourseEjemplosName = null;
+    let currentCoursePlanificacionName = null;
+    let currentCourseAlertasName = null;
     let currentEditingEventId = null;
     let currentEditingEventType = null;
     let selectedCalendarDate = new Date();
+    let isWeekCounting = false;
     let weekCountStartDate = null;
+    let currentManagingTopicCourseIndex = -1;
     
     const daysMap = { "1": "Lunes", "2": "Martes", "3": "Miércoles", "4": "Jueves", "5": "Viernes" };
 
@@ -404,16 +595,37 @@
     const getSavedState = () => JSON.parse(localStorage.getItem('planificacion_estado')) || {};
     const saveState = (state) => localStorage.setItem('planificacion_estado', JSON.stringify(state));
 
+    function updateTeacherNameUI() {
+        let tName = localStorage.getItem('teacher_name') || '[Nombre del Docente]';
+        let subtitle = document.getElementById('docenteCalendarSubtitle');
+        if(subtitle) subtitle.innerText = "Calendario de " + tName;
+    }
+
+    // TOGGLE MODAL CONFIGURACION
+    window.toggleConfigModal = function() {
+        var modal = document.getElementById('configModal');
+        if (modal.style.display === 'flex' || modal.style.display === 'block') {
+            modal.style.display = 'none';
+        } else {
+            modal.style.display = 'flex';
+        }
+    };
+
+    // INICIALIZACIÓN
     document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('teacherNameInput').value = localStorage.getItem('teacher_name') || "";
         document.getElementById('teacherPhoneInput').value = localStorage.getItem('teacher_phone') || "";
         document.getElementById('inspectorNameInput').value = localStorage.getItem('inspector_name') || "";
         document.getElementById('inspectorPhoneInput').value = localStorage.getItem('inspector_phone') || "";
 
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('reunionFecha').value = todayStr;
+
         loadStoredCSVPlan();
         loadStoredCSVStudents();
         checkCronogramaStatus();
         setupAutocompletes();
+        updateTeacherNameUI();
         
         setTimeout(() => { 
             if(!calendarInstance) initCalendar(); 
@@ -421,13 +633,15 @@
         }, 300);
     });
 
+    // SISTEMA DE PESTAÑAS PRINCIPAL
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+        document.querySelectorAll('.tabs .tab-btn, .container > div > .tab-btn').forEach(el => el.classList.remove('active'));
+        
         document.getElementById(tabId).classList.add('active');
         
-        const activeBtn = Array.from(document.querySelectorAll('.tab-btn')).find(b => b.getAttribute('onclick').includes(tabId));
-        if(activeBtn) activeBtn.classList.add('active');
+        const activeBtns = Array.from(document.querySelectorAll('.tab-btn')).filter(b => b.getAttribute('onclick').includes(tabId));
+        activeBtns.forEach(btn => btn.classList.add('active'));
         
         if(tabId === 'dailyView') {
             renderDailyView();
@@ -457,6 +671,424 @@
         }
     }
 
+    // PESTAÑAS SECUNDARIAS DE DOCUMENTACIÓN
+    function switchDocTab(viewId, btnElement) {
+        document.getElementById('reunionesView').style.display = 'none';
+        document.getElementById('areaView').style.display = 'none';
+        document.getElementById('ejemplosView').style.display = 'none';
+        document.getElementById('planificacionView').style.display = 'none';
+        document.getElementById('alertasView').style.display = 'none';
+        document.getElementById(viewId).style.display = 'block';
+        
+        document.getElementById('btnDocReuniones').classList.remove('active');
+        document.getElementById('btnDocArea').classList.remove('active');
+        document.getElementById('btnDocEjemplos').classList.remove('active');
+        document.getElementById('btnDocPlanificacion').classList.remove('active');
+        document.getElementById('btnDocAlertas').classList.remove('active');
+        btnElement.classList.add('active');
+    }
+
+    // ==========================================
+    // LÓGICA DE REUNIONES
+    // ==========================================
+    function addTemaTratado() {
+        const container = document.getElementById('temasTratadosContainer');
+        const div = document.createElement('div');
+        div.className = 'tema-tratado-item';
+        div.style.cssText = 'background: white; padding: 10px; border-radius: 4px; border: 1px solid #ccc; margin-bottom: 10px; position:relative;';
+        div.innerHTML = `
+            <button onclick="this.parentElement.remove()" style="position:absolute; right:5px; top:5px; background:none; border:none; color:red; cursor:pointer; font-weight:bold; font-size:16px;" title="Eliminar este tema">✖</button>
+            <input type="text" class="tema-titulo" placeholder="Tema tratado" style="margin-bottom: 5px; font-weight: bold; width: 90%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <textarea class="tema-desc" placeholder="Descripción de lo tratado..." style="height: 50px; width: 100%; border: 1px solid #ccc; padding: 8px; border-radius: 4px; box-sizing: border-box; resize: vertical;"></textarea>
+        `;
+        container.appendChild(div);
+    }
+
+    function enviarReunionPerplexity() {
+        const tema = document.getElementById('reunionTema').value.trim();
+        const dirigido = document.getElementById('reunionDirigido').value.trim();
+        const fecha = document.getElementById('reunionFecha').value;
+        const horaInicio = document.getElementById('reunionHoraInicio').value;
+        const horaFin = document.getElementById('reunionHoraFin').value;
+        
+        const temasElems = document.querySelectorAll('.tema-tratado-item');
+        let temasArr = [];
+        temasElems.forEach((elem, index) => {
+            const tTitulo = elem.querySelector('.tema-titulo').value.trim();
+            const tDesc = elem.querySelector('.tema-desc').value.trim();
+            if(tTitulo || tDesc) {
+                temasArr.push(`${index + 1}. ${tTitulo}: ${tDesc}`);
+            }
+        });
+        
+        if(!tema || !fecha || !horaInicio || !horaFin || temasArr.length === 0) {
+            alert('Por favor llena el tema de la reunión, fecha, hora de inicio, hora de finalización y al menos un tema tratado.');
+            return;
+        }
+
+        const docenteNombre = localStorage.getItem('teacher_name') || '[Nombre del Docente]';
+        let temasString = temasArr.join('\n');
+        
+        let dirigidoTexto = dirigido ? `dirigido a ${dirigido}` : '';
+
+        const prompt = `Asume el rol de docente mercedario, hazme un informe profesional de reunión que hubo de la Unidad Educativa Particular "García Moreno" que se hizo la fecha ${fecha}, a las ${horaInicio} ${dirigidoTexto} con el tema "${tema}" donde se trataron los siguientes temas: \n${temasString}\n terminado a las ${horaFin}. Firma: ${docenteNombre}, ordenalos así: primero la institución, salto de línea Para:, salto de línea, De: nombre del docente, salto de línea haz un una saludo formar con mi nombre, el que está en la firma de docente, y presente los temas, redacta profesionalmete un poquito largo, no tanto, cada tema y explicación, no inventes datos si no los proporciono, al final de todo, deja un salto de línea, di la hora de finalización de la reunión, salto de línea, atentemanete, salto de línea, nombre del docente y debajo la palabra Docente. No escribas nada en negrita`;
+
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    }
+
+    // ==========================================
+    // LÓGICA DE ÁREA
+    // ==========================================
+    function switchAreaSubTab(viewId, btnElement) {
+        document.getElementById('areaAgregarView').style.display = 'none';
+        document.getElementById('areaDetallarView').style.display = 'none';
+        document.getElementById(viewId).style.display = 'block';
+        
+        document.getElementById('btnAreaAgregar').classList.remove('active');
+        document.getElementById('btnAreaDetallar').classList.remove('active');
+        btnElement.classList.add('active');
+
+        if(viewId === 'areaDetallarView') {
+            renderAreaDetallar();
+        }
+    }
+
+    function updateAreaCourseButtons() {
+        const container = document.getElementById('areaCourseButtons');
+        if(!container) return;
+        container.querySelectorAll('.course-btn').forEach(btn => {
+            const courseName = btn.innerText.trim();
+            if(areaSelectedTopics[courseName] && areaSelectedTopics[courseName].length > 0) {
+                btn.classList.add('has-topics-selected');
+            } else {
+                btn.classList.remove('has-topics-selected');
+            }
+        });
+    }
+
+    function renderAreaCompletedTopics(courseName, courseIndex) {
+        const container = document.getElementById('areaCompletedTopicsList');
+        container.innerHTML = `<h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Temas Completados en ${courseName}</h4>`;
+        
+        const state = getSavedState();
+        let found = false;
+
+        planData.forEach((row, rowIndex) => {
+            const rawTopic = row[courseIndex];
+            if (!rawTopic || rawTopic.includes("XXXX")) return;
+            
+            const uniqueId = courseName + "_" + rowIndex;
+            const isCompleted = state[uniqueId]?.completed;
+            
+            if (isCompleted) {
+                found = true;
+                let topicStr = sanitizeText(rawTopic);
+                if(topicOverrides[uniqueId] && topicOverrides[uniqueId].deleted) return;
+                if(topicOverrides[uniqueId] && topicOverrides[uniqueId].title) topicStr = topicOverrides[uniqueId].title;
+                
+                const isAdded = areaSelectedTopics[courseName]?.some(t => t.uniqueId === uniqueId);
+                const safeTopicStr = topicStr.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                
+                container.innerHTML += `
+                    <div class="task-item" style="margin-bottom: 8px;">
+                        <div class="task-item-info"><strong>📝 ${topicStr}</strong></div>
+                        <button class="${isAdded ? 'btn-delete' : 'btn-success'}" onclick="toggleAreaTopic('${courseName}', '${uniqueId}', '${safeTopicStr}')">
+                            ${isAdded ? 'Quitar' : 'Añadir'}
+                        </button>
+                    </div>
+                `;
+            }
+        });
+        if(!found) container.innerHTML += '<p style="color:#666; font-style:italic;">Aún no hay temas marcados como completados en este curso. Ve a la pestaña "Notas".</p>';
+    }
+
+    window.toggleAreaTopic = function(course, uniqueId, topicStr) {
+        if(!areaSelectedTopics[course]) areaSelectedTopics[course] = [];
+        
+        const idx = areaSelectedTopics[course].findIndex(t => t.uniqueId === uniqueId);
+        if(idx > -1) {
+            areaSelectedTopics[course].splice(idx, 1);
+            if(areaSelectedTopics[course].length === 0) delete areaSelectedTopics[course];
+        } else {
+            areaSelectedTopics[course].push({ uniqueId, topic: topicStr, detail: '' });
+        }
+        
+        const currentCourseIndex = headers.findIndex(h => h.trim() === course);
+        renderAreaCompletedTopics(course, currentCourseIndex);
+        updateAreaCourseButtons();
+    };
+
+    function renderAreaDetallar() {
+        const container = document.getElementById('areaSelectedTopicsContainer');
+        const preview = document.getElementById('areaPreviewContainer');
+        container.innerHTML = '';
+        preview.innerHTML = '';
+        
+        let hasTopics = false;
+        
+        for(let course in areaSelectedTopics) {
+            if(areaSelectedTopics[course].length > 0) {
+                hasTopics = true;
+                container.innerHTML += `<h4 style="color: var(--secondary); margin-top:15px; margin-bottom:5px; border-bottom: 1px solid #eee; padding-bottom:3px;">📘 ${course}</h4>`;
+                
+                preview.innerHTML += `
+                <div style="background: white; padding: 10px; border-radius: 4px; border-left: 4px solid var(--primary); margin-bottom: 10px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
+                    <h5 style="color: var(--secondary); margin: 0 0 5px 0;">📘 ${course}</h5>
+                    <ul style="margin:0; padding-left:20px; font-size:13px; color: var(--text);">`;
+                
+                areaSelectedTopics[course].forEach(t => {
+                    const safeTopic = t.topic.replace(/'/g, "\\'").replace(/"/g, "&quot;");
+                    
+                    container.innerHTML += `
+                        <div class="area-tema-item" style="background: #fdfbf7; padding: 10px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 10px;">
+                            <div style="font-weight:bold; margin-bottom:5px; color: var(--primary);">📝 ${t.topic}</div>
+                            <div style="display:flex; gap:10px; align-items: flex-start;">
+                                <textarea id="detail_${t.uniqueId}" placeholder="Detalle lo avanzado sobre este tema..." style="flex:1; height: 50px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" oninput="updateAreaTopicDetail('${course}', '${t.uniqueId}', this.value)">${t.detail}</textarea>
+                                <button class="btn-info" style="white-space: nowrap; margin-top: 2px;" onclick="setSinNovedades('${course}', '${t.uniqueId}')">Sin novedades</button>
+                            </div>
+                        </div>
+                    `;
+                    
+                    preview.innerHTML += `<li><strong>${t.topic}:</strong> <span id="preview_detail_${t.uniqueId}">${t.detail || '...'}</span></li>`;
+                });
+                preview.innerHTML += `</ul></div>`;
+            }
+        }
+        
+        if(!hasTopics) {
+            container.innerHTML = '<p style="color:#666; font-style:italic;">No has añadido ningún tema. Regresa a "Agregar Temas".</p>';
+            preview.innerHTML = '<p style="color:#666; font-style:italic;">No hay temas escogidos.</p>';
+        }
+    }
+
+    window.updateAreaTopicDetail = function(course, uniqueId, val) {
+        if(areaSelectedTopics[course]) {
+            let t = areaSelectedTopics[course].find(x => x.uniqueId === uniqueId);
+            if(t) {
+                t.detail = val;
+                let p = document.getElementById('preview_detail_' + uniqueId);
+                if(p) p.innerText = val || '...';
+            }
+        }
+    };
+
+    window.setSinNovedades = function(course, uniqueId) {
+        if(areaSelectedTopics[course]) {
+            let t = areaSelectedTopics[course].find(x => x.uniqueId === uniqueId);
+            if(t) {
+                t.detail = "Sin novedades";
+                let ta = document.getElementById('detail_' + uniqueId);
+                if(ta) ta.value = "Sin novedades";
+                let p = document.getElementById('preview_detail_' + uniqueId);
+                if(p) p.innerText = "Sin novedades";
+            }
+        }
+    };
+
+    window.enviarAreaPerplexity = function() {
+        let subject = document.getElementById('areaSubjectName').value.trim();
+        let todayStr = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+        let teacherName = localStorage.getItem('teacher_name') || '[Nombre del Docente]';
+        
+        let prompt = `Asume el rol de docente de la Unidad Educativa Particular "García Moreno". Crea un informe para reunión de área, donde especifiques que hasta la fecha de hoy ${todayStr} se han avanzado en clases los siguientes temas, me haras la siguiente estuctura, primero pondras Jipijapa, y despues de la coma la fecha, el mes en palabra, dejas un salto de linea, en el centro como titulo que diga Informe de Área, dejas un salto de línea, haces un introducción de presentación breve, nombras la materia y orginiza la información en orden con el curso o materia, el tema y el detalle, si no presenta detalles redacta algo positivo sobre eso, y asi con todos, al final deja un salto de línea, Atentamente, salto de línea y nombre del docente, salto de línea, y la palabra Docente. No escribas nada en negrita`;
+        if(subject) prompt += ` de la materia ${subject}`;
+        prompt += `: `;
+        
+        let courseTexts = [];
+        for(let course in areaSelectedTopics) {
+            if(areaSelectedTopics[course].length > 0) {
+                let stdCount = studentsData[course] ? studentsData[course].length : 0;
+                let cText = `en el curso ${course} (con ${stdCount} estudiantes registrados) los temas: `;
+                let tTexts = areaSelectedTopics[course].map(t => `"${t.topic}" donde ${t.detail || 'no se registraron novedades'}`);
+                cText += tTexts.join(', ');
+                courseTexts.push(cText);
+            }
+        }
+        
+        if(courseTexts.length === 0) {
+            alert("Agrega temas en la pestaña 'Agregar Temas' antes de generar el informe.");
+            return;
+        }
+        
+        prompt += courseTexts.join('; y ') + ".";
+        prompt += `\n\nFirma: ${teacherName}`;
+        
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    };
+
+    // ==========================================
+    // LÓGICA DE EJEMPLOS
+    // ==========================================
+    function renderEjemplosPanel(courseName) {
+        currentCourseEjemplosName = courseName;
+        document.getElementById('examenesManager').style.display = 'none';
+        document.getElementById('ejemplosManager').style.display = 'block';
+        document.getElementById('ejemplosCourseLabel').innerText = courseName;
+        document.getElementById('ejemplosInfoAdicional').value = '';
+        
+        const topicSelect = document.getElementById('ejemplosTopicSelect');
+        topicSelect.innerHTML = '<option value="">-- Selecciona el Tema --</option>';
+        const cIdx = headers.findIndex(h => h.trim() === courseName);
+        let defaultTopic = null; const today = new Date();
+
+        if (cIdx !== -1) {
+            planData.forEach((row, rIdx) => {
+                const rawTopic = row[cIdx]; if (!rawTopic || rawTopic.includes("XXXX")) return;
+                let topicStr = sanitizeText(rawTopic); if (!topicStr || topicStr.toLowerCase().includes("repaso y evalua")) return;
+                
+                const uniqueId = courseName + "_" + rIdx;
+                if(topicOverrides[uniqueId] && topicOverrides[uniqueId].deleted) return;
+                if(topicOverrides[uniqueId] && topicOverrides[uniqueId].title) topicStr = topicOverrides[uniqueId].title;
+
+                const opt = document.createElement('option'); opt.value = topicStr; opt.innerText = topicStr;
+                topicSelect.appendChild(opt);
+
+                const range = parseDateRange(row[0]);
+                if (range && today >= range.start && today <= range.end) defaultTopic = topicStr;
+            });
+        }
+        if (defaultTopic) topicSelect.value = defaultTopic;
+    }
+
+     window.enviarEjemplosPerplexity = function() {
+        const tema = document.getElementById('ejemplosTopicSelect').value, info = document.getElementById('ejemplosInfoAdicional').value.trim();
+        if (!tema) { alert("Por favor, selecciona un tema."); return; }
+        let prompt = `Asume el rol de docente de una institución educativa. Genera 10 ejemplos, 5 resueltos y 5 para resolver, del siguiente tema: ${tema}.`;
+        if (info) prompt += ` te doy una información adicional: ${info}`;
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    };
+
+     window.enviarEjemplosPerplexityt = function() {
+        const tema = document.getElementById('ejemplosTopicSelect').value, info = document.getElementById('ejemplosInfoAdicional').value.trim();
+        if (!tema) { alert("Por favor, selecciona un tema."); return; }
+        let prompt = `Asume el rol de docente de una institución educativa. Genera el contenido teórico del siguiente tema: ${tema}, no hables como docente, solo genera la información con un profesional, que esté la información en tercera persona, que tenga sus citas bibliograficas según apa séptima edición, has la estructura que tú consideres y me mostrarás la información así: titulo segun el tema, salto de linea, la información teórica segun la estructura que tu consideres comenzando siempre con una definición, salto de línea, las referencias bibliográficas.`;
+        if (info) prompt += ` te doy una información adicional: ${info}`;
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    };
+
+    window.renderExamenesPanel = function() {
+        document.getElementById('ejemplosManager').style.display = 'none'; document.getElementById('examenesManager').style.display = 'block';
+        document.getElementById('examenesContenido').value = ''; document.getElementById('examenesEjemplo').value = '';
+    };
+
+    window.enviarExamenesPerplexity = function() {
+        const contenido = document.getElementById('examenesContenido').value.trim(), ejemplo = document.getElementById('examenesEjemplo').value.trim();
+        if (!contenido) { alert("Ingresa el contenido para generar las preguntas."); return; }
+        let prompt = `Asume el rol de docente de una institución educativa. Crea dos preguntas de examen del siguiente contenido:\n\n${contenido}\n\nde la siguiente manera, te paso un ejemplo y así como el ejemplo hasme las preguntas con el contenido que te pase:\n\n${ejemplo}, muestrame las respuestas al final`;
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    };
+    
+    // ==========================================
+    // LÓGICA DE PLANIFICACIÓN
+    // ==========================================
+    function renderPlanificacionPanel(courseName) {
+        currentCoursePlanificacionName = courseName;
+        document.getElementById('planificacionManager').style.display = 'block';
+        document.getElementById('planificacionCourseLabel').innerText = courseName;
+        document.getElementById('planificacionDetalle').value = '';
+        
+        const topicSelect = document.getElementById('planificacionTopicSelect');
+        topicSelect.innerHTML = '<option value="">-- Selecciona el Tema --</option>';
+        const cIdx = headers.findIndex(h => h.trim() === courseName);
+        let defaultTopic = null; const today = new Date();
+
+        if (cIdx !== -1) {
+            planData.forEach((row, rIdx) => {
+                const rawTopic = row[cIdx]; if (!rawTopic || rawTopic.includes("XXXX")) return;
+                let topicStr = sanitizeText(rawTopic); if (!topicStr || topicStr.toLowerCase().includes("repaso y evalua")) return;
+                
+                const uniqueId = courseName + "_" + rIdx;
+                if(topicOverrides[uniqueId] && topicOverrides[uniqueId].deleted) return;
+                if(topicOverrides[uniqueId] && topicOverrides[uniqueId].title) topicStr = topicOverrides[uniqueId].title;
+
+                const opt = document.createElement('option'); opt.value = topicStr; opt.innerText = topicStr;
+                topicSelect.appendChild(opt);
+
+                const range = parseDateRange(row[0]);
+                if (range && today >= range.start && today <= range.end) defaultTopic = topicStr;
+            });
+        }
+        if (defaultTopic) topicSelect.value = defaultTopic;
+    }
+
+    window.enviarPlanificacionPerplexity = function() {
+        const tema = document.getElementById('planificacionTopicSelect').value;
+        const detalle = document.getElementById('planificacionDetalle').value.trim();
+
+        if (!tema) {
+            alert("Por favor, selecciona un tema.");
+            return;
+        }
+
+        let prompt = `Actúa como un docente experto en planificación educativa de clases para ${currentCoursePlanificacionName} con el tema ${tema}, Necesito que elabores una planificación en formato de proyecto educativo siguiendo estrictamente esta estructura:
+
+* Nombre del tema
+* Objetivo del Proyecto (entre uno o dos)
+* 4 Destrezas con criterios de desempeño
+* 3 Indicadores de evaluación
+* Estrategias metodológicas activas con metodología ACC, divididas en:
+  Anticipación (de 2 a 3 viñetas)
+  Comprensión (de 4 a 5 viñetas)
+  Consolidación (de 2 a 3 viñetas)
+Pero si te pido con Estrategias metodológicas ERCA, haras:
+Experiencia (de 2 a 3 viñetas)
+Reflexión (de 2 a 3 viñetas)
+Conceptualización (de 4 a 5 viñetas)
+Aplicación (3 viñetas)
+* Técnica e Instrumento
+
+Condiciones obligatorias:
+
+* Pon en viñetas (•) los objetivos, las destrezas, los indicadores, las viñenas de las Estrategias metodológicas, las técnica, y abajo, los instrumentos, no usar numeración.
+* No usar negritas ni formatos especiales.
+* Redacción clara, pedagógica y acorde al nivel educativo.
+* Las destrezas deben iniciar con verbos en presente (ej. utiliza, identifica, analiza, aplica, etc, la que tú consideres).
+* Los indicadores deben ser observables y medibles.
+* Las actividades deben ser coherentes con el tema.
+* Mantener coherencia entre objetivo, destrezas e indicadores.`;
+        if (detalle) {
+            prompt += `, te doy también este detalle: ${detalle}`;
+        }
+
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    };
+
+    // ==========================================
+    // LÓGICA DE ALERTAS
+    // ==========================================
+    function renderAlertasPanel(courseName) {
+        currentCourseAlertasName = courseName;
+        document.getElementById('alertasManager').style.display = 'block';
+        document.getElementById('alertasCourseLabel').innerText = courseName;
+    }
+
+    window.enviarAlertasPerplexity = function() {
+        if (!currentCourseAlertasName) return;
+
+        const tareas = (pendingTasks[currentCourseAlertasName] || []).filter(t => !t.hecha);
+        let listaTareas = "";
+        if (tareas.length > 0) {
+            listaTareas = tareas.map(t => `- ${t.student}: ${t.task}`).join('\n');
+        } else {
+            listaTareas = "No hay casos de tareas no presentadas.";
+        }
+
+        const reportes = disciplineRecords[currentCourseAlertasName] || [];
+        let listaReportes = "";
+        if (reportes.length > 0) {
+            listaReportes = reportes.map(r => `- ${r.student}: ${r.desc} (Fecha: ${r.date})`).join('\n');
+        } else {
+            listaReportes = "No hay reportes de inspección.";
+        }
+
+        const prompt = `Soy docente de un institución educativa. Hazme un análisis de caso de alerta de lo siguiente, de ${currentCourseAlertasName} tengo los siguientes casos:\n${listaTareas}\ny estos casos de inspección:\n${listaReportes}, primero hazlo por cada estudiante, presentamelos en esta estructura: 1. Análisis del desempeño académico: Identificar frecuencia, Detectar patrones en relacion a los temas. 2. Análisis del comportamiento disciplinario. 3. Conclusión del análisis. Sugerencia de intervención.`;
+
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    };
+
+    // ==========================================
+    // CARGA DE ARCHIVOS Y CONFIGURACIÓN CSV
+    // ==========================================
     function loadStoredCSVPlan() {
         const storedHeaders = localStorage.getItem('csv_headers');
         const storedData = localStorage.getItem('csv_data');
@@ -518,7 +1150,10 @@
             stdHeaders.forEach((courseName, index) => {
                 if(!courseName) return;
                 let course = courseName.trim(); parsedStudents[course] = [];
-                stdRows.forEach(row => { if(row[index] && row[index].trim() !== "") parsedStudents[course].push(row[index].trim()); });
+                stdRows.forEach(row => { 
+                    if(row[index] && row[index].trim() !== "") parsedStudents[course].push(row[index].trim()); 
+                });
+                parsedStudents[course].sort((a,b) => a.localeCompare(b));
             });
             localStorage.setItem('students_data', JSON.stringify(parsedStudents)); location.reload();
         }});
@@ -570,6 +1205,13 @@
             const savedDays = courseSchedules[course] || {};
             const savedPhone = coursePhones[course] || "";
             
+            let manageBtn = `
+                <div class="manage-btn-group">
+                    <button class="btn-info" style="font-size:11px; padding:4px 8px;" onclick="openManageStudents('${course}')">👥 Administrar Estudiantes</button>
+                    <button class="btn-info" style="font-size:11px; padding:4px 8px; background-color:#8e44ad; border:none;" onclick="openManageTopics('${course}')">📚 Administrar Temario</button>
+                </div>
+            `;
+
             const daysHTML = Object.entries(daysMap).map(([id, name]) => {
                 const isChecked = savedDays.hasOwnProperty(id), savedHour = isChecked ? savedDays[id] : "";
                 let hourOptions = '<option value="">Sin hora asignada</option>';
@@ -579,7 +1221,7 @@
             
             container.innerHTML += `
             <div class="course-schedule">
-                <h4>${course}</h4>
+                <h4 style="display:flex; align-items:center; justify-content:space-between; flex-wrap: wrap; width:100%;">${course} ${manageBtn}</h4>
                 <input type="text" class="course-phone-input" data-course="${course}" placeholder="Teléfono del Tutor (Opcional)" value="${savedPhone}">
                 <div class="days-checkboxes">${daysHTML}</div>
             </div>`;
@@ -588,6 +1230,104 @@
     }
 
     window.toggleHourSelect = function(cb) { cb.parentElement.nextElementSibling.style.display = cb.checked ? 'block' : 'none'; };
+
+    // ==========================================
+    // ADMINISTRAR ESTUDIANTES Y TEMARIOS
+    // ==========================================
+    window.openManageStudents = function(course) {
+        currentManagingCourse = course;
+        document.getElementById('manageStudentsTitle').innerText = `Administrar Estudiantes - ${course}`;
+        renderManageStudentsList();
+        document.getElementById('manageStudentsModal').style.display = 'flex';
+    };
+
+    window.renderManageStudentsList = function() {
+        const list = document.getElementById('manageStudentsList');
+        list.innerHTML = '';
+        let stds = studentsData[currentManagingCourse] || [];
+        stds.forEach((s, idx) => {
+            list.innerHTML += `<div style="display:flex; justify-content:space-between; padding:5px 0; border-bottom:1px solid #eee;">
+                <span><strong>${idx + 1}.</strong> ${s}</span>
+                <button class="btn-delete" style="padding:2px 6px; font-size:10px;" onclick="deleteStudent(${idx})">✖</button>
+            </div>`;
+        });
+    };
+
+    window.addNewStudent = function() {
+        let name = document.getElementById('newStudentName').value.trim();
+        if(!name) return;
+        if(!studentsData[currentManagingCourse]) studentsData[currentManagingCourse] = [];
+        studentsData[currentManagingCourse].push(name);
+        studentsData[currentManagingCourse].sort((a,b) => a.localeCompare(b));
+        localStorage.setItem('students_data', JSON.stringify(studentsData));
+        document.getElementById('newStudentName').value = '';
+        renderManageStudentsList();
+    };
+
+    window.deleteStudent = function(idx) {
+        if(confirm("¿Eliminar a este estudiante?")) {
+            studentsData[currentManagingCourse].splice(idx, 1);
+            localStorage.setItem('students_data', JSON.stringify(studentsData));
+            renderManageStudentsList();
+        }
+    };
+
+    window.openManageTopics = function(course) {
+        currentManagingCourse = course;
+        currentManagingTopicCourseIndex = headers.findIndex(h => h.trim() === course);
+        document.getElementById('manageTopicsTitle').innerText = `Administrar Temario - ${course}`;
+        renderManageTopicsList();
+        document.getElementById('manageTopicsModal').style.display = 'flex';
+    };
+
+    window.renderManageTopicsList = function() {
+        const list = document.getElementById('manageTopicsList');
+        list.innerHTML = '';
+        if(currentManagingTopicCourseIndex === -1) return;
+
+        let html = '<table style="width:100%; border-collapse: collapse;">';
+        html += '<tr><th style="border-bottom:1px solid #ccc; padding:5px; text-align:left; width: 120px;">Fecha</th><th style="border-bottom:1px solid #ccc; padding:5px; text-align:left;">Tema</th></tr>';
+
+        planData.forEach((row, idx) => {
+            let dateStr = row[0] || '';
+            let topicStr = row[currentManagingTopicCourseIndex] || '';
+            
+            const uniqueId = currentManagingCourse + "_" + idx;
+            if(topicOverrides[uniqueId] && topicOverrides[uniqueId].deleted) topicStr = "";
+            else if(topicOverrides[uniqueId] && topicOverrides[uniqueId].title) topicStr = topicOverrides[uniqueId].title;
+
+            html += `<tr>
+                <td style="padding:5px; border-bottom:1px solid #eee; font-size:13px; vertical-align: top;">${dateStr}</td>
+                <td style="padding:5px; border-bottom:1px solid #eee;">
+                    <textarea id="edit_topic_${idx}" style="width:100%; box-sizing:border-box; padding:5px; resize:vertical; font-family:inherit; min-height: 40px;">${topicStr}</textarea>
+                </td>
+            </tr>`;
+        });
+        html += '</table>';
+        list.innerHTML = html;
+    };
+
+    window.saveTopicsChanges = function() {
+        planData.forEach((row, idx) => {
+            const ta = document.getElementById(`edit_topic_${idx}`);
+            if(ta) {
+                planData[idx][currentManagingTopicCourseIndex] = ta.value;
+                
+                const uniqueId = currentManagingCourse + "_" + idx;
+                if(topicOverrides[uniqueId]) {
+                    delete topicOverrides[uniqueId];
+                }
+            }
+        });
+        localStorage.setItem('csv_data', JSON.stringify(planData));
+        localStorage.setItem('topicOverrides', JSON.stringify(topicOverrides));
+        document.getElementById('manageTopicsModal').style.display = 'none';
+        alert('Temario actualizado correctamente.');
+        renderDailyView();
+        if (document.getElementById('listView').classList.contains('active') && currentCourseListIndex !== null) {
+            renderList(currentCourseListIndex);
+        }
+    };
 
     function saveSchedules() {
         let tName = document.getElementById('teacherNameInput').value.trim();
@@ -624,51 +1364,71 @@
         localStorage.setItem('telefonos_cursos', JSON.stringify(coursePhones));
         
         alert("Configuraciones guardadas correctamente."); 
+        updateTeacherNameUI();
         renderDailyView();
     }
 
+    // ==========================================
+    // VISTA DIARIA Y NAVEGACIÓN
+    // ==========================================
+    function isSameDay(d1, d2) {
+        return d1.getFullYear() === d2.getFullYear() && d1.getMonth() === d2.getMonth() && d1.getDate() === d2.getDate();
+    }
+
+    window.changeDay = function(offset) {
+        selectedCalendarDate.setDate(selectedCalendarDate.getDate() + offset);
+        renderDailyView();
+    };
+
+    window.resetDay = function() {
+        selectedCalendarDate = new Date();
+        renderDailyView();
+    };
+
     function renderDailyView() {
-        const today = new Date(), todayDayNum = today.getDay(); 
-        document.getElementById('dailyDateTitle').innerText = today.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
+        const todayReal = new Date();
+        const isToday = isSameDay(selectedCalendarDate, todayReal);
+        const dayNum = selectedCalendarDate.getDay(); 
+        
+        document.getElementById('dailyDateTitle').innerText = selectedCalendarDate.toLocaleDateString('es-ES', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' }).toUpperCase();
 
         const dailyGrid = document.getElementById('dailyGrid'), unassignedGrid = document.getElementById('unassignedGrid');
         dailyGrid.innerHTML = ''; unassignedGrid.innerHTML = `<h4 style="color: #666; margin-bottom: 5px; border-bottom: 1px solid #eee; padding-bottom: 5px;">Temas del día (Sin hora específica configurada)</h4>`;
 
-        if (todayDayNum === 0 || todayDayNum === 6) {
+        if (dayNum === 0 || dayNum === 6) {
             dailyGrid.innerHTML = '<p style="text-align:center; color:#666; font-size: 16px;">Es fin de semana. ¡Descansa! ☕</p>';
             unassignedGrid.style.display = 'none'; return;
         }
 
-        let todayRowIndex = planData.findIndex(row => { const range = parseDateRange(row[0] || ""); return range && today >= range.start && today <= range.end; });
-        if (todayRowIndex === -1) {
-            dailyGrid.innerHTML = '<p style="text-align:center; color:#e74c3c; font-weight:bold;">No se encontró planificación para la fecha de hoy.</p>';
+        let rowIndex = planData.findIndex(row => { const range = parseDateRange(row[0] || ""); return range && selectedCalendarDate >= range.start && selectedCalendarDate <= range.end; });
+        if (rowIndex === -1) {
+            dailyGrid.innerHTML = '<p style="text-align:center; color:#e74c3c; font-weight:bold;">No se encontró planificación para la fecha seleccionada.</p>';
             unassignedGrid.style.display = 'none'; return;
         }
 
         unassignedGrid.style.display = 'flex';
-        const row = planData[todayRowIndex], unassignedTopics = [], scheduledTopics = {}; 
+        const row = planData[rowIndex], unassignedTopics = [], scheduledTopics = {}; 
 
         for (let i = 1; i < headers.length; i++) {
             const courseName = headers[i]?.trim();
             if (!courseName || courseName.toLowerCase() === 'entorno') continue;
             const schedule = courseSchedules[courseName] || {};
-            if (schedule.hasOwnProperty(todayDayNum.toString())) {
+            if (schedule.hasOwnProperty(dayNum.toString())) {
                 const rawTopic = row[i]; if (!rawTopic || rawTopic.includes("XXXX")) continue;
                 let topicStr = sanitizeText(rawTopic); if (!topicStr || topicStr.toLowerCase().includes("repaso y evalua")) continue;
                 
-                const uniqueId = courseName + "_" + todayRowIndex;
+                const uniqueId = courseName + "_" + rowIndex;
                 if(topicOverrides[uniqueId] && topicOverrides[uniqueId].deleted) continue;
                 if(topicOverrides[uniqueId] && topicOverrides[uniqueId].title) topicStr = topicOverrides[uniqueId].title;
 
-                const hour = schedule[todayDayNum.toString()], itemData = { course: courseName, topic: topicStr, id: uniqueId, courseIdx: i };
+                const hour = schedule[dayNum.toString()], itemData = { course: courseName, topic: topicStr, id: uniqueId, courseIdx: i };
                 if (hour) { if (!scheduledTopics[hour]) scheduledTopics[hour] = []; scheduledTopics[hour].push(itemData); } 
                 else { unassignedTopics.push(itemData); }
             }
         }
 
         for (let h = 1; h <= 9; h++) {
-            const isCurrent = isCurrentSlot(h);
-            const activeClass = isCurrent ? 'current-slot' : '';
+            const activeClass = (isToday && isCurrentSlot(h)) ? 'current-slot' : (!isToday ? 'other-day-slot' : '');
 
             if (scheduledTopics[h]) {
                 scheduledTopics[h].forEach(item => dailyGrid.innerHTML += createSlotHTML(h, item, activeClass, true));
@@ -678,7 +1438,7 @@
         }
 
         let hasUnassigned = false;
-        unassignedTopics.forEach(item => { hasUnassigned = true; unassignedGrid.innerHTML += createSlotHTML(null, item, '', true); });
+        unassignedTopics.forEach(item => { hasUnassigned = true; unassignedGrid.innerHTML += createSlotHTML(null, item, (!isToday ? 'other-day-slot' : ''), true); });
         if(!hasUnassigned) unassignedGrid.style.display = 'none';
     }
 
@@ -708,7 +1468,16 @@
     function populateCourseButtons() {
         const cCal = document.getElementById('courseButtonsCal'), cList = document.getElementById('courseButtonsList');
         const cTasks = document.getElementById('courseButtonsTasks'), cDisc = document.getElementById('courseButtonsDiscipline');
-        cCal.innerHTML = ''; cList.innerHTML = ''; cTasks.innerHTML = ''; cDisc.innerHTML = '';
+        const cArea = document.getElementById('areaCourseButtons');
+        const cEjemplos = document.getElementById('ejemplosCourseButtons');
+        const cPlan = document.getElementById('planificacionCourseButtons');
+        const cAlertas = document.getElementById('alertasCourseButtons');
+        
+        cCal.innerHTML = ''; cList.innerHTML = ''; cTasks.innerHTML = ''; cDisc.innerHTML = ''; 
+        if(cArea) cArea.innerHTML = '';
+        if(cEjemplos) cEjemplos.innerHTML = '';
+        if(cPlan) cPlan.innerHTML = '';
+        if(cAlertas) cAlertas.innerHTML = '';
         
         const btnAllCal = document.createElement('button');
         btnAllCal.className = 'course-btn active'; btnAllCal.innerText = '📅 Calendario Docente';
@@ -741,8 +1510,14 @@
                 mkBtn(cList, '#courseButtonsList', (n, i) => renderList(i), false);
                 mkBtn(cTasks, '#courseButtonsTasks', (n) => renderTaskPanel(n), false);
                 mkBtn(cDisc, '#courseButtonsDiscipline', (n) => renderDisciplinePanel(n), false);
+                if(cArea) mkBtn(cArea, '#areaCourseButtons', (n, i) => renderAreaCompletedTopics(n, i), false);
+                if(cEjemplos) mkBtn(cEjemplos, '#ejemplosCourseButtons', (n, i) => renderEjemplosPanel(n), false);
+                if(cPlan) mkBtn(cPlan, '#planificacionCourseButtons', (n, i) => renderPlanificacionPanel(n), false);
+                if(cAlertas) mkBtn(cAlertas, '#alertasCourseButtons', (n, i) => renderAlertasPanel(n), false);
             }
         }
+ 
+       if(cEjemplos) { const btnExa = document.createElement('button'); btnExa.className = 'course-btn'; btnExa.style.backgroundColor = '#ce93d8'; btnExa.style.color = '#fff'; btnExa.style.borderColor = '#ce93d8'; btnExa.innerText = '📝 Exámenes'; btnExa.onclick = (e) => { setActiveBtn(e, '#ejemplosCourseButtons'); renderExamenesPanel(); }; cEjemplos.appendChild(btnExa); }
 
         const btnCountTasks = document.createElement('button');
         btnCountTasks.className = 'course-btn'; btnCountTasks.innerText = '📈 Conteo Faltas';
@@ -756,12 +1531,12 @@
         cTasks.appendChild(btnCountTasks);
 
         const btnCronograma = document.createElement('button');
-        btnCronograma.className = 'course-btn'; btnCronograma.innerText = '📌 Cronograma';
+        btnCronograma.className = 'course-btn'; btnCronograma.innerText = '📌 Cronograma Anual';
         btnCronograma.onclick = (e) => { setActiveBtn(e, '#courseButtonsCal'); document.getElementById('calendarSectionTitle').innerText = '📌 Cronograma Anual'; renderCalendar('cronograma'); };
         cCal.appendChild(btnCronograma);
         
-        // Actualizar colores del calendario inicialmente
         updateCalendarCourseButtons(selectedCalendarDate);
+        updateAreaCourseButtons();
     }
 
     function setActiveBtn(event, containerSelector) {
@@ -832,7 +1607,6 @@
         return null;
     }
 
-    // CALENDARIO DOCENTE
     function initCalendar() {
         const calendarEl = document.getElementById('calendar');
         if (calendarInstance) return;
@@ -852,14 +1626,13 @@
             datesSet: function(info) {
                 if (info.view.type === 'dayGridWeek') {
                     document.getElementById('btnStartWeekContainer').style.display = 'block';
-                    updateWeekNumber(info.view.currentStart);
+                    if(isWeekCounting) updateWeekNumber(info.view.currentStart);
                 } else {
                     document.getElementById('btnStartWeekContainer').style.display = 'none';
                     document.getElementById('weekNumberDisplay').innerText = '';
                 }
             },
             dateClick: function(info) {
-                // Actualizar botones de curso en calendario según fecha seleccionada
                 selectedCalendarDate = new Date(info.dateStr + "T00:00:00");
                 updateCalendarCourseButtons(selectedCalendarDate);
 
@@ -882,15 +1655,24 @@
         renderCalendar(null); 
     }
 
-    window.startWeekCount = function() {
+    window.toggleWeekCount = function() {
         if(!calendarInstance) return;
-        weekCountStartDate = calendarInstance.view.currentStart;
-        updateWeekNumber(calendarInstance.view.currentStart);
+        if(isWeekCounting) {
+            isWeekCounting = false;
+            weekCountStartDate = null;
+            document.getElementById('btnStartWeek').innerText = 'Empezar Conteo de Semanas';
+            document.getElementById('weekNumberDisplay').innerText = '';
+        } else {
+            isWeekCounting = true;
+            weekCountStartDate = calendarInstance.view.currentStart;
+            document.getElementById('btnStartWeek').innerText = 'Detener Conteo de Semanas';
+            updateWeekNumber(calendarInstance.view.currentStart);
+        }
     };
 
     function updateWeekNumber(viewStart) {
         const display = document.getElementById('weekNumberDisplay');
-        if (calendarInstance.view.type !== 'dayGridWeek' || !weekCountStartDate) {
+        if (calendarInstance.view.type !== 'dayGridWeek' || !isWeekCounting || !weekCountStartDate) {
             display.innerText = "";
             return;
         }
@@ -1073,14 +1855,12 @@
         state[nextUniqueId].comments[nextDayId] = currentComment;
         saveState(state);
         
-        // Efecto visual al botón
         btnElement.style.backgroundColor = 'darkred';
         btnElement.style.color = 'white';
         
         alert(`Anotado "REVISIÓN DE TAREA" para el próximo día de clase programado.`);
     };
 
-    // NOTAS (Temas de Hoy)
     function renderTodayTopicsList() {
         const container = document.getElementById('topicsContainer');
         container.innerHTML = '<h3 style="color: var(--primary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">📚 Temas Programados para Hoy</h3>';
@@ -1141,7 +1921,6 @@
         if (!foundAny) container.innerHTML += '<p style="color:#666;">No hay temas académicos regulares planificados para hoy (según los horarios configurados).</p>';
     }
 
-    // NOTAS (Por Curso)
     function renderList(courseIndex) {
         const container = document.getElementById('topicsContainer'); container.innerHTML = '';
         if (!courseIndex) return;
@@ -1220,7 +1999,6 @@
         }
     });
 
-    // AUTOCOMPLETADO
     function setupAutocompletes() {
         const attach = (inputId, listId, getCourseFn) => {
             const input = document.getElementById(inputId), listDiv = document.getElementById(listId);
@@ -1252,7 +2030,6 @@
         attach('studentSearchDiscipline', 'autocompleteListDiscipline', () => currentCourseDisciplineName);
     }
 
-    // TAREAS - CONTEO
     function renderTaskCount() {
         const list = document.getElementById('taskCountList'); 
         list.innerHTML = '';
@@ -1297,7 +2074,6 @@
         list.innerHTML = html;
     }
 
-    // TAREAS - HISTORIAL ESTUDIANTE (MODAL)
     window.showStudentTaskHistory = function(course, student) {
         document.getElementById('historyStudentName').innerText = `${student} - ${course}`;
         const list = document.getElementById('historyList');
@@ -1324,13 +2100,12 @@
         document.getElementById('studentHistoryModal').style.display = 'flex';
     };
 
-    // TAREAS - VER TODO
     function renderAllPendingTasks() {
         const list = document.getElementById('allTasksList'); list.innerHTML = '';
         let allTasks = [];
         for (let courseName of Object.keys(pendingTasks)) {
             if(pendingTasks[courseName]) {
-                pendingTasks[courseName].filter(t => !t.hecha).forEach(t => allTasks.push({...t, course: courseName}));
+                pendingTasks[courseName].filter(t => !t.hecha).forEach(t => allTasks.push({...t, course: courseName, topic: t.topic || 'Sin tema específico'}));
             }
         }
 
@@ -1354,6 +2129,8 @@
             list.innerHTML += `<h5 style="margin: 15px 0 5px 0; color: var(--secondary); font-size: 16px; border-bottom: 2px solid var(--surface); padding-bottom:3px;">📅 ${date}</h5>`;
             grouped[date].forEach(t => {
                 const isEspecie = t.especie ? 'especie-item' : '';
+                const reportColor = t.reported ? '#2ecc71' : '#e74c3c'; 
+
                 list.innerHTML += `
                 <div class="task-item ${isEspecie}" style="margin-bottom: 8px;">
                     <div class="task-item-info">
@@ -1364,7 +2141,7 @@
                     <div style="display:flex; flex-direction:column; gap:5px; margin-left:10px;">
                         <button class="btn-success" onclick="manageTask('${t.course}', '${t.id}', 'hecha')">✔️ Hecha</button>
                         <button class="btn-info" onclick="manageTask('${t.course}', '${t.id}', 'especie')">📘 Especie</button>
-                        <button class="btn-whatsapp" onclick="reportTask('${t.course}', '${t.id}')">💬 Reportar</button>
+                        <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;" onclick="reportTask('${t.course}', '${t.id}')">💬 Reportar</button>
                     </div>
                 </div>`;
             });
@@ -1438,6 +2215,7 @@
             id: Date.now().toString(), 
             student: student, 
             task: finalTaskStr, 
+            topic: selectedTopic || 'Sin tema específico',
             status: status,
             ticketCode: ticketCode,
             date: new Date().toLocaleDateString('es-ES'),
@@ -1472,6 +2250,8 @@
             listContainer.innerHTML += `<h5 style="margin: 15px 0 5px 0; color: var(--secondary); font-size: 15px; border-bottom: 1px solid #eee;">📅 ${date}</h5>`;
             grouped[date].reverse().forEach(t => {
                 const isEspecie = t.especie ? 'especie-item' : '';
+                const reportColor = t.reported ? '#2ecc71' : '#e74c3c'; 
+
                 listContainer.innerHTML += `
                 <div class="task-item ${isEspecie}" style="margin-bottom: 8px;">
                     <div class="task-item-info">
@@ -1482,7 +2262,7 @@
                     <div style="display:flex; flex-direction:column; gap:5px; margin-left:10px;">
                         <button class="btn-success" onclick="manageTask('${currentCourseTaskName}', '${t.id}', 'hecha')">✔️ Hecha</button>
                         <button class="btn-info" onclick="manageTask('${currentCourseTaskName}', '${t.id}', 'especie')">📘 Especie</button>
-                        <button class="btn-whatsapp" onclick="reportTask('${currentCourseTaskName}', '${t.id}')">💬 Reportar</button>
+                        <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;" onclick="reportTask('${currentCourseTaskName}', '${t.id}')">💬 Reportar</button>
                     </div>
                 </div>`;
             });
@@ -1542,12 +2322,11 @@
             code = `${init}-001`; 
         }
 
-        const msg = `*${code}*\n\nEstimado(a) Tutor(a):\nPor medio de la presente, me permito informar que, en la fecha *${task.date}*, el/la estudiante *${task.student}* no presentó la tarea asignada correspondiente a la asignatura, por el siguiente motivo: *${task.status || 'No presentó'}*.\n\nAgradezco su apoyo en el seguimiento de este caso.`;
+        const msg = `*${code}*\n\nEstimado(a) Tutor(a) y Representante Legal:\nPor medio de la presente, me permito informar que, en la fecha *${task.date}*, el/la estudiante *${task.student}* no presentó la tarea asignada correspondiente al tema *${task.topic || 'Sin tema específico'}*, por el siguiente motivo: *${task.status || 'No presentó'}*.\n\nAgradezco su apoyo en el seguimiento de este caso.`;
         
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     };
 
-    // REPORTES DISCIPLINA
     function renderAllDisciplineRecords() {
         const list = document.getElementById('allDisciplineList'); list.innerHTML = '';
         
@@ -1563,25 +2342,39 @@
             return; 
         }
 
-        let studentsMap = {};
+        let groupedByCourse = {};
         allRecords.forEach(r => {
-            if(!studentsMap[r.student]) studentsMap[r.student] = [];
-            studentsMap[r.student].push(r);
+            if(!groupedByCourse[r.course]) groupedByCourse[r.course] = [];
+            groupedByCourse[r.course].push(r);
         });
 
-        let sortedStudents = Object.keys(studentsMap).sort();
+        let sortedCourses = Object.keys(groupedByCourse).sort();
         
-        list.innerHTML = '<p style="color: var(--secondary); font-size: 14px; margin-bottom: 10px;">Selecciona un estudiante para ver todo su historial disciplinario en todas las materias:</p>';
+        list.innerHTML = '<p style="color: var(--secondary); font-size: 14px; margin-bottom: 10px;">Selecciona el nombre subrayado de un estudiante para ver su historial disciplinario en todas las materias:</p>';
 
-        sortedStudents.forEach(student => {
-            const count = studentsMap[student].length;
-            list.innerHTML += `
-            <div class="task-item" style="cursor:pointer; margin-bottom: 8px; padding: 10px 15px; border-left: 4px solid #f39c12;" onclick="showGlobalStudentDisciplineHistory('${student}')">
-                <div class="task-item-info" style="display:flex; justify-content:space-between; width:100%; align-items:center;">
-                    <strong>👤 ${student}</strong>
-                    <span style="font-size:13px; color: #d35400;"><strong>${count}</strong> Reporte(s) registrado(s)</span>
-                </div>
-            </div>`;
+        sortedCourses.forEach(courseName => {
+            list.innerHTML += `<h5 style="margin: 15px 0 5px 0; color: var(--secondary); font-size: 16px; border-bottom: 2px solid var(--surface); padding-bottom: 5px;">📘 ${courseName}</h5>`;
+            
+            [...groupedByCourse[courseName]].reverse().forEach(r => {
+                const safeDesc = r.desc ? r.desc.replace(/'/g, "\\'") : ''; const safeStudent = r.student.replace(/'/g, "\\'");
+                const ticketNum = r.ticket || '000';
+                const reportColor = r.reported ? '#2ecc71' : '#e74c3c';
+
+                list.innerHTML += `
+                <div class="task-item discipline-item" style="margin-bottom: 8px;">
+                    <div class="task-item-info" style="flex:1;">
+                        <strong style="color: #d35400; text-decoration: underline; cursor: pointer;" onclick="showGlobalStudentDisciplineHistory('${safeStudent}')">👤 ${r.student} (N° ${ticketNum})</strong>
+                        <span>⚠️ ${r.desc || 'Sin detalles adicionales'}</span><br>
+                        <span style="font-size: 11px; color: #999;">📅 ${r.date} - ⏰ ${r.time}</span><br>
+                        <span style="font-size: 11px; font-weight: bold; color: ${r.reported ? '#2980b9' : '#7f8c8d'};">📢 ${r.reported ? 'Reportado' : 'No reportado'}</span>
+                    </div>
+                    <div style="display:flex; flex-direction:column; gap:5px; margin-left:10px;">
+                        <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;" onclick="sendWhatsAppDiscipline('${courseName}', '${r.id}')">💬 WhatsApp a Inspector</button>
+                        <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;" onclick="generateOficio('${courseName}', '${r.id}')">📄 Redacción a WhatsApp</button>
+                        <button class="btn-delete" onclick="deleteDisciplineRecord('${r.id}', '${courseName}')">🗑️ Eliminar</button>
+                    </div>
+                </div>`;
+            });
         });
     }
 
@@ -1610,6 +2403,7 @@
             const safeDesc = r.desc ? r.desc.replace(/'/g, "\\'") : ''; 
             const safeStudent = r.student.replace(/'/g, "\\'");
             const ticketNum = r.ticket || '000';
+            const reportColor = r.reported ? '#2ecc71' : '#e74c3c';
 
             list.innerHTML += `
             <div style="background: #fdfbf7; border: 1px solid #ccc; border-left: 4px solid #f39c12; padding: 10px; border-radius: 4px; margin-bottom: 10px;">
@@ -1621,8 +2415,8 @@
                 <div style="font-size: 12px; color: #666; margin-top: 5px; margin-bottom: 10px;">📅 ${r.date} - ⏰ ${r.time}</div>
                 <div style="font-size: 11px; font-weight: bold; color: ${r.reported ? '#2980b9' : '#7f8c8d'}; margin-bottom: 10px;">📢 ${r.reported ? 'Reportado' : 'No reportado'}</div>
                 <div style="display:flex; flex-wrap:wrap; gap:5px; border-top: 1px solid #eee; padding-top: 10px;">
-                    <button class="btn-whatsapp" onclick="sendWhatsAppDiscipline('${r.course}', '${r.id}', true)">💬 WhatsApp a Inspector</button>
-                    <button class="btn-info" onclick="generateOficio('${r.course}', '${r.id}', true)">📄 Redacción a mi WhatsApp</button>
+                    <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px;" onclick="sendWhatsAppDiscipline('${r.course}', '${r.id}', true)">💬 WhatsApp a Inspector</button>
+                    <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px;" onclick="generateOficio('${r.course}', '${r.id}', true)">📄 Redacción a mi WhatsApp</button>
                     <button class="btn-delete" onclick="deleteDisciplineRecord('${r.id}', '${r.course}', true)">🗑️ Eliminar</button>
                 </div>
             </div>`;
@@ -1683,6 +2477,7 @@
             const item = document.createElement('div'); item.className = 'task-item discipline-item';
             const safeDesc = r.desc ? r.desc.replace(/'/g, "\\'") : ''; const safeStudent = r.student.replace(/'/g, "\\'");
             const ticketNum = r.ticket || '000';
+            const reportColor = r.reported ? '#2ecc71' : '#e74c3c';
 
             item.innerHTML = `
                 <div class="task-item-info" style="flex:1;">
@@ -1692,8 +2487,8 @@
                     <span style="font-size: 11px; font-weight: bold; color: ${r.reported ? '#2980b9' : '#7f8c8d'};">📢 ${r.reported ? 'Reportado' : 'No reportado'}</span>
                 </div>
                 <div style="display:flex; flex-direction:column; gap:5px; margin-left:10px;">
-                    <button class="btn-whatsapp" onclick="sendWhatsAppDiscipline('${currentCourseDisciplineName}', '${r.id}')">💬 Enviar WhatsApp</button>
-                    <button class="btn-info" onclick="generateOficio('${currentCourseDisciplineName}', '${r.id}')">📄 Enviar Oficio</button>
+                    <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px;" onclick="sendWhatsAppDiscipline('${currentCourseDisciplineName}', '${r.id}')">💬 Enviar WhatsApp</button>
+                    <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold; margin-right: 5px;" onclick="generateOficio('${currentCourseDisciplineName}', '${r.id}')">📄 Redacción a WhatsApp</button>
                     <button class="btn-delete" onclick="deleteDisciplineRecord('${r.id}', '${currentCourseDisciplineName}')">🗑️ Eliminar</button>
                 </div>`;
             listContainer.appendChild(item);
@@ -1707,12 +2502,13 @@
         r.reported = true;
         localStorage.setItem('reportes_disciplina', JSON.stringify(disciplineRecords));
         if(currentCourseDisciplineName && !isModal) renderDisciplineRecordsList();
+        if (document.getElementById('allDisciplineView').style.display === 'block') renderAllDisciplineRecords();
         
         let iPhone = localStorage.getItem('inspector_phone') || '593968860729'; 
         iPhone = iPhone.replace(/[^\d+]/g, '');
 
         const textoDesc = r.desc ? r.desc : "Falta disciplinaria reportada.";
-        const msg = `*Reporte N° ${r.ticket || '000'}*\n\nEstimado Inspector General:\nPor medio de la presente, me permito informar que, siendo las *${r.time}* del día *${r.date}*, se procede a realizar el reporte correspondiente del estudiante *${r.student}*, en relación con los siguientes hechos: *${textoDesc}*`;
+        const msg = `*Reporte N° ${r.ticket || '000'}*\n\nEstimado Inspector General:\nPor medio de la presente, me permito informar que, con hora *${r.time}* del día *${r.date}*, se procede a realizar el reporte correspondiente del/la estudiante *${r.student}*, en relación con los siguientes hechos: *${textoDesc}*`;
         
         window.open(`https://wa.me/${iPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         if(isModal) showGlobalStudentDisciplineHistory(r.student);
@@ -1725,6 +2521,7 @@
         r.reported = true;
         localStorage.setItem('reportes_disciplina', JSON.stringify(disciplineRecords));
         if(currentCourseDisciplineName && !isModal) renderDisciplineRecordsList();
+        if (document.getElementById('allDisciplineView').style.display === 'block') renderAllDisciplineRecords();
 
         let teacherName = localStorage.getItem('teacher_name') || '[Nombre del docente]';
         let teacherPhone = localStorage.getItem('teacher_phone') || '';
@@ -1737,7 +2534,7 @@
         }
         teacherPhone = teacherPhone.replace(/[^\d+]/g, '');
 
-        const msg = `${todayStr}\nAsunto: Reporte Nº${r.ticket || '000'} al Departamento de Inspección\nPara: ${inspectorName}\n\nEstimado Inspector General:\n\nPor medio de la presente, me permito informar que, en fecha ${r.date}, a las ${r.time}, el estudiante ${r.student}, presentó una conducta inapropiada durante el desarrollo de la jornada académica.\n\nEn este contexto, se evidenció un comportamiento que contraviene las normas de convivencia institucional, por lo siguiente: ${r.desc}. Esta situación incidió de manera directa en el normal desarrollo de las actividades académicas, así como en el adecuado ambiente de aprendizaje dentro del aula.\n\nEn virtud de lo expuesto, pongo en su conocimiento el presente reporte con la finalidad de que se proceda conforme a lo establecido en la normativa institucional vigente y se determinen las acciones correspondientes.\n\nSin otro particular, quedo atento(a) a cualquier disposición adicional que se estime pertinente.\n\nAtentamente,\n${teacherName}\nDocente\n${todayStr}`;
+        const msg = `${todayStr}\nAsunto: Reporte Nº${r.ticket || '000'} al Departamento de Inspección\nPara: ${inspectorName}\n\nEstimado Inspector General:\n\nPor medio de la presente, me permito informar que, en fecha ${r.date}, a las ${r.time}, el/la estudiante ${r.student}, presentó una conducta inapropiada durante el desarrollo de la jornada académica.\n\nEn este contexto, se evidenció un comportamiento que contraviene las normas de convivencia institucional, por lo siguiente: ${r.desc}. Esta situación incidió de manera directa en el normal desarrollo de las actividades académicas, así como en el adecuado ambiente de aprendizaje dentro del aula.\n\nEn virtud de lo expuesto, pongo en su conocimiento el presente reporte con la finalidad de que se proceda conforme a lo establecido en la normativa institucional vigente y se determinen las acciones correspondientes.\n\nSin otro particular, quedo atento(a) a cualquier disposición adicional que se estime pertinente.\n\nAtentamente,\n${teacherName}\nDocente\n${todayStr}`;
         
         window.open(`https://wa.me/${teacherPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         if(isModal) showGlobalStudentDisciplineHistory(r.student);
