@@ -201,6 +201,10 @@
             <label><strong>Datos del Inspector General:</strong></label>
             <input type="text" id="inspectorNameInput" placeholder="Nombre del Inspector (Ej: Ing. Enrique Gutiérrez)" style="margin-bottom: 5px;">
             <input type="text" id="inspectorPhoneInput" placeholder="Teléfono del Inspector (Ej: 099...)" style="margin-bottom: 5px;">
+
+            <label><strong>Link de Cuaderno de Trabajo:</strong></label>
+            <input type="text" id="WorkbookNameInput" placeholder="www.google.com/drive/098483" style="margin-bottom: 5px;">
+
         </div>
 
         <div id="scheduleConfigContainer" style="display:none; margin-top: 20px;">
@@ -275,8 +279,8 @@
 </div>
 
 <div class="container">
-    <h2 onclick="alert('Developed by: ⛩️ Andrés Fienco')" title="Ver créditos">Unidad Educativa Particular</br>"García Moreno"</h2>
-    
+    <h2 onclick="alert('Developed by: ⛩️ Andrés Fienco\nBuilt in: Android Studio\nPowered by: Poco F8 pro\nversion: 8.53')" title="Ver créditos">Unidad Educativa Particular</br>"García Moreno"</h2>
+        
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('dailyView')">1. Diario</button>
         <button class="tab-btn" onclick="switchTab('listView')">2. Notas</button>
@@ -287,7 +291,6 @@
     <div style="display: flex; justify-content: center; margin-bottom: 25px; margin-top: -10px;">
         <button class="tab-btn" style="max-width: 250px;" onclick="switchTab('documentationView')">⚡︎ Gen ⚡︎</button>
     </div>
-    <h6> <i> Developed by: Andrés Fienco.</i> </h6>
     <div id="dailyView" class="tab-content active">
         
         <div style="display: flex; justify-content: center; align-items: center; gap: 15px; border-bottom: 2px solid var(--surface); padding-bottom: 10px; margin-bottom: 15px;">
@@ -320,6 +323,7 @@
                     <a href="https://mega.nz/folder/PiY1gagB#NLoz2FBEJ-N9BBfxY5jPwA" target="_blank" class="course-btn" style="text-decoration: none;">📁 UTILITARIOS</a>
                     <a href="https://docs.google.com/spreadsheets/d/1nKd2riz7ORKXx7UOtFXRbq0NZs94ddKRtcYqX6IiGrE/edit?usp=drive_link" target="_blank" class="course-btn" style="text-decoration: none;">💳 PAGOS</a>
                     <a href="https://chat.whatsapp.com/KrObqyyWYUK44sztvHg4Rk?mode=gi_t" target="_blank" class="course-btn" style="text-decoration: none;">💬 COMUNICACIÓN</a>
+                    <button onclick="WorkbookName()" target="_blank" class="course-btn" style=" font-size: 16px; text-decoration: none;">📚 WORKBOOK </button>
                 </div>
             </div>
 
@@ -616,6 +620,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         document.getElementById('teacherPhoneInput').value = localStorage.getItem('teacher_phone') || "";
         document.getElementById('inspectorNameInput').value = localStorage.getItem('inspector_name') || "";
         document.getElementById('inspectorPhoneInput').value = localStorage.getItem('inspector_phone') || "";
+        document.getElementById('WorkbookNameInput').value = localStorage.getItem('WorkbookName') || "";
 
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('reunionFecha').value = todayStr;
@@ -669,6 +674,33 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
             }
         }
     }
+
+ // GUARDAR ENLACE
+ 
+         // Al cargar la página, recuperar automáticamente lo guardado
+        window.onload = function() {
+            const datoGuardado = localStorage.getItem('user_saved_link');
+            if (datoGuardado) {
+                document.getElementById('WorkbookNameInput').value = datoGuardado;
+            }
+        };
+
+        // Función para abrir el enlace
+        function WorkbookName() {
+            let url = document.getElementById('WorkbookNameInput').value.trim();
+
+            if (url === "") {
+                alert("No hay ningún enlace escrito o guardado.");
+                return;
+            }
+
+            // Asegurar que el navegador reconozca el enlace como URL
+            if (!url.startsWith('http://') && !url.startsWith('https://')) {
+                url = 'https://' + url;
+            }
+
+            window.open(url, '_blank');
+        }
 
     // PESTAÑAS SECUNDARIAS DE DOCUMENTACIÓN
     function switchDocTab(viewId, btnElement) {
@@ -730,7 +762,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         
         let dirigidoTexto = dirigido ? `dirigido a ${dirigido}` : '';
 
-        const prompt = `Asume el rol de docente mercedario, hazme un informe profesional de reunión que hubo de la Unidad Educativa Particular "García Moreno" que se hizo la fecha ${fecha}, a las ${horaInicio} ${dirigidoTexto} con el tema "${tema}" donde se trataron los siguientes temas: \n${temasString}\n terminado a las ${horaFin}. Firma: ${docenteNombre}, ordenalos así: primero la institución, salto de línea Para:, salto de línea, De: nombre del docente, salto de línea haz un una saludo formar con mi nombre, el que está en la firma de docente, y presente los temas, redacta profesionalmete un poquito largo, no tanto, cada tema y explicación, no inventes datos si no los proporciono, al final de todo, deja un salto de línea, di la hora de finalización de la reunión, salto de línea, atentemanete, salto de línea, nombre del docente y debajo la palabra Docente. No escribas nada en negrita`;
+        const prompt = `Asume el rol de docente mercedario, hazme un informe profesional de reunión que hubo de la Unidad Educativa Particular "García Moreno" que se hizo la fecha ${fecha}, empezando la reunión a las ${horaInicio}, dirigido a ${dirigidoTexto}, el tema de la reunión fue "${tema}", donde se trataron los siguientes puntos: \n${temasString}\n , terminado la reunión a las ${horaFin}. El resumen de la reunión lo presenta el docente: ${docenteNombre}, ordenalos así: primero la institución, salto de línea, Para: a quien va dirigido, salto de línea, De: nombre del docente que presenta el resumen, salto de línea, haz un una saludo formar con el nombre del docente que presenta la , el que está en la firma de docente, y presente los temas, redacta profesionalmete un poquito largo, no tanto, cada tema y explicación, no inventes datos si no los proporciono, al final de todo, deja un salto de línea, di la hora de finalización de la reunión, salto de línea, atentamente, salto de línea, nombre del docente y  debajo la palabra Docente. No escribas nada en negrita`;
 
         window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
     }
@@ -1333,7 +1365,8 @@ Condiciones obligatorias:
         let tPhone = document.getElementById('teacherPhoneInput').value.trim();
         let iName = document.getElementById('inspectorNameInput').value.trim();
         let iPhone = document.getElementById('inspectorPhoneInput').value.trim();
-        
+        let Url = document.getElementById('WorkbookNameInput').value.trim();
+
         if(tPhone.startsWith('0')) tPhone = '+593' + tPhone.substring(1);
         if(iPhone.startsWith('0')) iPhone = '+593' + iPhone.substring(1);
         
@@ -1341,6 +1374,7 @@ Condiciones obligatorias:
         localStorage.setItem('teacher_phone', tPhone);
         localStorage.setItem('inspector_name', iName);
         localStorage.setItem('inspector_phone', iPhone);
+        localStorage.setItem('WorkbookName', Url);
 
         courseSchedules = {};
         coursePhones = {};
@@ -2533,7 +2567,7 @@ Condiciones obligatorias:
         }
         teacherPhone = teacherPhone.replace(/[^\d+]/g, '');
 
-        const msg = `${todayStr}\nAsunto: Reporte Nº${r.ticket || '000'} al Departamento de Inspección\nPara: ${inspectorName}\n\nEstimado Inspector General:\n\nPor medio de la presente, me permito informar que, en fecha ${r.date}, a las ${r.time}, el/la estudiante ${r.student}, presentó una conducta inapropiada durante el desarrollo de la jornada académica.\n\nEn este contexto, se evidenció un comportamiento que contraviene las normas de convivencia institucional, por lo siguiente: ${r.desc}. Esta situación incidió de manera directa en el normal desarrollo de las actividades académicas, así como en el adecuado ambiente de aprendizaje dentro del aula.\n\nEn virtud de lo expuesto, pongo en su conocimiento el presente reporte con la finalidad de que se proceda conforme a lo establecido en la normativa institucional vigente y se determinen las acciones correspondientes.\n\nSin otro particular, quedo atento(a) a cualquier disposición adicional que se estime pertinente.\n\nAtentamente,\n${teacherName}\nDocente\n${todayStr}`;
+        const msg = `${todayStr}\nAsunto: Reporte Nº${r.ticket || '000'} al Departamento de Inspección\nPara: ${inspectorName}\n\nEstimado Inspector General:\n\nPor medio de la presente, me permito informar que, en fecha ${r.date}, a las ${r.time}, el/la estudiante ${r.student}, presentó una conducta inapropiada durante el desarrollo de la jornada académica.\n\nEn este contexto, se evidenció un comportamiento que contraviene las normas de convivencia institucional, por lo siguiente: ${r.desc}. Esta situación incidió de manera directa en el normal desarrollo de las actividades académicas, así como en el adecuado ambiente de aprendizaje dentro del aula.\n\nEn virtud de lo expuesto, pongo en su conocimiento el presente reporte con la finalidad de que se proceda conforme a lo establecido en la normativa institucional vigente y se determinen las acciones correspondientes.\n\nSin otro particular, quedo atento(a) a cualquier disposición adicional que se estime pertinente.\n\nAtentamente,\n${teacherName}\nDocente\n`;
         
         window.open(`https://wa.me/${teacherPhone}?text=${encodeURIComponent(msg)}`, '_blank');
         if(isModal) showGlobalStudentDisciplineHistory(r.student);
