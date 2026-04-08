@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Planificación Académica - Unidad Educativa Particular "García Moreno"</title>
+    <title> APP Académica - Unidad Educativa Particular "García Moreno"</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
@@ -342,7 +342,8 @@
 </div>
 
 <div class="container">
-    <h2 onclick="alert('Developed by: ⛩️ Andrés Fienco\nBuilt in: Android Studio\nPowered by: Poco F8 pro\nversion: 8.53')" title="Ver créditos">Unidad Educativa Particular</br>"García Moreno"</h2>
+        <h6> <i>  Developed by: Andrés Fienco </i> </h6>
+    <h2 onclick="alert('Developed by: ⛩️ Andrés Fienco\nversion: 17.30\nPOR SEGURIDAD DE PERMISOS Y PRIVACIDAD, LA APP GUARDA INTERNAMENTE LOS DATOS, SI SE BORRA LA APP SE PIERDEN LOS DATOS')" title="Ver créditos">Unidad Educativa Particular</br>"García Moreno"</h2>
         
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('dailyView')">1. Diario</button>
@@ -511,6 +512,7 @@
                         <li><strong>Justificó:</strong> <span id="stat-hist-justifico" style="color: orange; font-weight: bold;">0%</span></li>
                     </ul>
                     <button id="btn-volver-stat-curso" onclick="mostrarEstadisticaGeneralCurso()" class="tab-btn" style="display: none; width: 100%; margin-top: 15px; font-size: 0.85em;">Ver general del curso</button>
+                  <div id="caja-fechas-faltas"></div>
                 </div>
 
             </div>
@@ -653,6 +655,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
                     <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Análisis de Alertas</h4>
                     <p style="font-weight: bold; margin-bottom: 10px;">Curso: <span id="alertasCourseLabel" style="color: var(--primary);"></span></p>
                     <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarAlertasPerplexity()">Revisión con AI</button>
+                    <button style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #f39c12; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarAsistenciaPerplexity()">Revisión de Asistencia con AI</button>
                 </div>
             </div>
         </div>
@@ -662,6 +665,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
 </div>
 
 <script>
+
     // Variables Globales
     let planData = [];
     let headers = [];
@@ -1107,7 +1111,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
      window.enviarEjemplosPerplexity = function() {
         const tema = document.getElementById('ejemplosTopicSelect').value, info = document.getElementById('ejemplosInfoAdicional').value.trim();
         if (!tema) { alert("Por favor, selecciona un tema."); return; }
-        let prompt = `Asume el rol de docente de una institución educativa. Genera 10 ejemplos, 5 resueltos y 5 para resolver, del siguiente tema: ${tema}.`;
+        let prompt = `Asume el rol de docente de una institución educativa. Genera 10 ejemplos, 5 resueltos y 5 para resolver, del siguiente tema: ${tema}, no hables como docente, solo muestrame la información con un profesional,.`;
         if (info) prompt += ` te doy una información adicional: ${info}`;
         window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
     };
@@ -1115,7 +1119,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
      window.enviarEjemplosPerplexityt = function() {
         const tema = document.getElementById('ejemplosTopicSelect').value, info = document.getElementById('ejemplosInfoAdicional').value.trim();
         if (!tema) { alert("Por favor, selecciona un tema."); return; }
-        let prompt = `Asume el rol de docente de una institución educativa. Genera el contenido teórico del siguiente tema: ${tema}, no hables como docente, solo genera la información con un profesional, que esté la información en tercera persona, que tenga sus citas bibliograficas según apa séptima edición, has la estructura que tú consideres y me mostrarás la información así: titulo segun el tema, salto de linea, la información teórica segun la estructura que tu consideres comenzando siempre con una definición, salto de línea, las referencias bibliográficas.`;
+        let prompt = `Asume el rol de docente de una institución educativa. Genera el contenido teórico del siguiente tema: ${tema}, no hables como docente, solo genera la información con un profesional, que esté la información en tercera persona, que tenga sus citas bibliograficas según apa séptima edición, has la estructura que tú consideres y me mostrarás la información así: titulo segun el tema, salto de linea, la información teórica segun la estructura que tu consideres con temas y subtemas definidos y con numeración comenzando siempre con una definición, salto de línea, las referencias bibliográficas.`;
         if (info) prompt += ` te doy una información adicional: ${info}`;
         window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
     };
@@ -1195,6 +1199,7 @@ Condiciones obligatorias:
 
 * Pon en viñetas (•) los objetivos, las destrezas, los indicadores, las viñenas de las Estrategias metodológicas, las técnica, y abajo, los instrumentos, no usar numeración.
 * No usar negritas ni formatos especiales.
+* Los objetivos deben estar en verbo en infinitivo.
 * Redacción clara, pedagógica y acorde al nivel educativo.
 * Las destrezas deben iniciar con verbos en presente (ej. utiliza, identifica, analiza, aplica, etc, la que tú consideres).
 * Los indicadores deben ser observables y medibles.
@@ -2959,6 +2964,11 @@ function calcularEstadisticasAsistenciaDiaria() {
 
 // 6. CÁLCULO: HISTORIAL GLOBAL DEL CURSO
 function mostrarEstadisticaGeneralCurso() {
+    // === ESTO ES LO NUEVO: OCULTAR LA CAJITA ROJA AL VOLVER ===
+    let cajaFechas = document.getElementById('caja-fechas-faltas');
+    if (cajaFechas) cajaFechas.style.display = 'none';
+    // ==========================================================
+
     document.querySelectorAll('.fila-asistencia').forEach(el => el.classList.remove('seleccionada'));
     document.getElementById('titulo-stat-historica').textContent = "Historial del Curso";
     document.getElementById('subtitulo-stat-historica').style.display = "block";
@@ -2989,7 +2999,7 @@ function mostrarEstadisticaGeneralCurso() {
     if (!btnExportar) {
         btnExportar = document.createElement('button');
         btnExportar.id = 'btn-exportar-asistencia';
-        btnExportar.textContent = '📥 Exportar Mes a Excel';
+        btnExportar.textContent = '📄 Visualizar Mes';
         btnExportar.style.marginTop = '15px';
         btnExportar.style.width = '100%';
         btnExportar.style.padding = '10px';
@@ -3008,7 +3018,7 @@ function mostrarEstadisticaGeneralCurso() {
     if (!btnExportarPDF) {
         btnExportarPDF = document.createElement('button');
         btnExportarPDF.id = 'btn-exportar-asistencia-pdf';
-        btnExportarPDF.textContent = '📄 Exportar Mes a PDF';
+        btnExportarPDF.textContent = '📥 Descargar Mes';
         btnExportarPDF.style.marginTop = '10px';
         btnExportarPDF.style.width = '100%';
         btnExportarPDF.style.padding = '10px';
@@ -3029,6 +3039,69 @@ function mostrarEstadisticaEstudiante(estudiante) {
     document.getElementById('titulo-stat-historica').textContent = "Historial: " + estudiante;
     document.getElementById('subtitulo-stat-historica').style.display = "none";
     document.getElementById('btn-volver-stat-curso').style.display = "block"; 
+
+// === INICIO: MOSTRAR FECHAS DE FALTAS EXACTAS ABAJO DEL BOTÓN ===
+    let cajaFechas = document.getElementById('caja-fechas-faltas');
+    if (cajaFechas) {
+        
+        // ¡OJO AQUÍ! Asumo que la variable del alumno que tocas se llama 'est' o 'estudiante'. 
+        // Si en tu función de arriba dice algo como "function verDetalle(alumno)", cambia 'est' por 'alumno'.
+        let nombreAlumno = typeof est !== 'undefined' ? est : (typeof estudiante !== 'undefined' ? estudiante : null);
+        
+        if (nombreAlumno) {
+            let cursoActual = window.cursoActualAsistencia;
+            let historialApp = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+            let datosApp = historialApp[cursoActual] || {};
+
+            let fFaltas = [];
+            let fJustif = [];
+
+            // 1. Extraemos las fechas de ese alumno
+            Object.keys(datosApp).forEach(fecha => {
+                let estado = datosApp[fecha][nombreAlumno];
+                if (estado === 2) fFaltas.push(fecha); 
+                if (estado === 3) fJustif.push(fecha);
+            });
+
+            // 2. Ordenamos por MES y DÍA cronológicamente
+            const ordenarFechas = (a, b) => {
+                let pA = a.split('/'); let pB = b.split('/');
+                // Comparamos Año, luego Mes, luego Día
+                return new Date(pA[2], pA[1]-1, pA[0]) - new Date(pB[2], pB[1]-1, pB[0]);
+            };
+            fFaltas.sort(ordenarFechas);
+            fJustif.sort(ordenarFechas);
+
+            // 3. Unimos las fechas con un SALTO DE LÍNEA (<br>)
+            let textoFaltas = fFaltas.length > 0 ? fFaltas.join('<br>') : '<span style="color:gray;">Ninguna</span>';
+            let textoJustif = fJustif.length > 0 ? fJustif.join('<br>') : '<span style="color:gray;">Ninguna</span>';
+
+            // 4. Imprimimos en la cajita
+            cajaFechas.innerHTML = `
+                <div style="margin-top: 15px; padding: 15px; border: 1px solid #e74c3c; border-radius: 8px; background-color: #fff; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+                    
+                    <h4 style="color: #6b2133; margin: 0 0 10px 0; font-size: 15px; text-transform: uppercase;">Detalle de Inasistencias</h4>
+                    
+                    <div style="font-size: 14px; margin-bottom: 15px;">
+                        <span style="font-weight: bold; color: #c0392b;">❌ FALTAS:</span><br>
+                        <div style="margin-top: 5px; color: #333; line-height: 1.6;">
+                            ${textoFaltas}
+                        </div>
+                    </div>
+
+                    <div style="font-size: 14px;">
+                        <span style="font-weight: bold; color: #d35400;">📝 JUSTIFICADAS:</span><br>
+                        <div style="margin-top: 5px; color: #333; line-height: 1.6;">
+                            ${textoJustif}
+                        </div>
+                    </div>
+
+                </div>
+            `;
+            cajaFechas.style.display = 'block';
+        }
+    }
+    // === FIN: MOSTRAR FECHAS DE FALTAS ===
 
     // Ocultamos el botón de exportar Excel
     let btnExportar = document.getElementById('btn-exportar-asistencia');
@@ -3061,12 +3134,11 @@ function volverACursosAsistencia() {
     document.getElementById('vista-cursos-asistencia').style.display = 'block';
 }
 
-// 9. EXPORTAR A EXCEL (CSV)
+// 9. REEMPLAZO DE LA FUNCIÓN EXPORTAR (AHORA MUESTRA PREVISUALIZACIÓN Y WHATSAPP)
 function exportarAsistenciaMes() {
     let curso = window.cursoActualAsistencia;
     if (!curso) return;
 
-    // Saber en qué mes y año estamos según el calendario
     let fechaBase = window.fechaActualAsistencia || new Date().toLocaleDateString('es-EC');
     let partesFecha = fechaBase.split('/'); 
     let mesActual = partesFecha[1];
@@ -3075,50 +3147,97 @@ function exportarAsistenciaMes() {
     let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
     let datosCurso = historialGlobal[curso] || {};
 
-    // Buscar solo las fechas que coincidan con el mes y año que estamos viendo
     let fechasDelMes = Object.keys(datosCurso).filter(fecha => {
         let p = fecha.split('/');
         return p[1] === mesActual && p[2] === anioActual;
     });
 
-    // Ordenar los días del menor al mayor (1, 2, 3...)
     fechasDelMes.sort((a, b) => parseInt(a.split('/')[0]) - parseInt(b.split('/')[0]));
 
     if (fechasDelMes.length === 0) {
-        alert('No hay asistencias marcadas en este mes para exportar.');
+        alert('No hay asistencias marcadas en este mes para mostrar.');
         return;
     }
 
-    // Traer estudiantes
     let todosLosEstudiantes = JSON.parse(localStorage.getItem('students_data')) || {};
     let estudiantes = todosLosEstudiantes[curso] || [];
     estudiantes.sort();
 
-    // Armar matriz de datos para Excel
-    let datosCsv = [];
-    
-    // Encabezados: "Estudiante" y luego las fechas
-    let encabezados = ['Estudiante', ...fechasDelMes];
-    datosCsv.push(encabezados);
+    // Guardamos la app para poder volver sin perder datos
+    window.contenidoOriginalApp = document.body.innerHTML;
 
-    // Llenar datos de cada estudiante
+    // === CREAR PANTALLA VISUAL PARA CAPTURA DE PANTALLA ===
+    let htmlTabla = `
+        <div style="font-family: Arial, sans-serif; padding: 15px; background: white; color: black; min-height: 100vh;">
+            
+            <div style="background: #f2e8d5; padding: 10px; border-radius: 8px; border: 1px dashed #6b2133; margin-bottom: 15px;">
+                <p style="text-align:center; font-weight: bold; margin: 0; color: #6b2133; font-size: 14px;">
+                    📸 Toma una CAPTURA DE PANTALLA de este reporte para guardarlo.
+                </p>
+            </div>
+
+            <button onclick="document.body.innerHTML = window.contenidoOriginalApp; window.location.reload();" style="background: #6b2133; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-size: 16px; margin-bottom: 15px; cursor: pointer; width: 100%; font-weight: bold;">
+                🔙 Volver a la App
+            </button>
+
+            <div style="border: 2px solid #6b2133; padding: 10px; border-radius: 5px; background: white;">
+                <h3 style="color: #6b2133; text-align: center; margin-top: 0;">Registro de Asistencia - ${curso}</h3>
+                <h5 style="text-align: center; margin-top: -10px;">Mes: ${mesActual} / Año: ${anioActual}</h5>
+                
+                <div style="overflow-x: auto;">
+                    <table border="1" style="width: 100%; border-collapse: collapse; text-align: center; font-size: 11px;">
+                        <thead>
+                            <tr style="background-color: #f2e8d5; color: #6b2133;">
+                                <th style="padding: 4px; text-align: left; min-width: 100px;">Estudiante</th>
+                                ${fechasDelMes.map(f => `<th style="padding: 4px;">${f.split('/')[0]}</th>`).join('')}
+                            </tr>
+                        </thead>
+                        <tbody>
+    `;
+
+    // Armamos texto para WhatsApp (Resumen de Totales)
+    let textoWhatsApp = `*Resumen Asistencia ${curso} - Mes ${mesActual}/${anioActual}*%0A%0A`;
+
     estudiantes.forEach(est => {
-        let fila = [est];
+        htmlTabla += `<tr><td style="padding: 4px; text-align: left; font-weight: bold;">${est}</td>`;
+        
+        let asistencias = 0;
+        let faltas = 0;
+        let justificadas = 0;
+        
         fechasDelMes.forEach(fecha => {
             let estado = datosCurso[fecha][est];
-            if (estado === 1) fila.push('✓');
-            else if (estado === 2) fila.push('X');
-            else if (estado === 3) fila.push('J');
-            else fila.push('-'); // Si no se marcó nada ese día
+            let marca = "-";
+            if (estado === 1) { marca = "A"; asistencias++; }
+            else if (estado === 2) { marca = "F"; faltas++; }
+            else if (estado === 3) { marca = "J"; justificadas++; }
+            htmlTabla += `<td style="padding: 4px;">${marca}</td>`;
         });
-        datosCsv.push(fila);
+        htmlTabla += `</tr>`;
+        
+        // Agregamos al estudiante y sus totales al mensaje de WhatsApp
+        textoWhatsApp += `-${est}: ${asistencias} Asist. | ${faltas} Faltas | ${justificadas} Justif.%0A`;
     });
 
-    // Convertir a Excel usando PapaParse y descargar
-    let csv = Papa.unparse(datosCsv);
-    // Agregamos \uFEFF para que Excel lea perfectamente las tildes y las ñ
-    let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
-    saveAs(blob, `Asistencia_${curso}_Mes_${mesActual}_${anioActual}.csv`);
+    // Leer el teléfono del Docente configurado en la app
+    let teacherPhone = localStorage.getItem('teacher_phone') || '';
+    teacherPhone = teacherPhone.replace(/[^\d+]/g, ''); // Limpiar el número por si tiene espacios
+
+    htmlTabla += `
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <a href="https://wa.me/${teacherPhone}?text=${textoWhatsApp}" target="_blank" style="display: block; background: #25D366; color: white; padding: 12px 20px; border: none; border-radius: 8px; font-size: 16px; margin-top: 15px; text-align: center; font-weight: bold; text-decoration: none;">
+                💬 Enviar Resumen Total a mi WhatsApp
+            </a>
+
+        </div>
+    `;
+
+    // Reemplazamos la app actual con esta pantalla visual
+    document.body.innerHTML = htmlTabla;
 }
 
 // EXPORTAR A PDF
@@ -3165,8 +3284,8 @@ function exportarAsistenciaMesPDF() {
         let fila = [est];
         fechasDelMes.forEach(fecha => {
             let estado = datosCurso[fecha][est];
-            if (estado === 1) fila.push('V'); 
-            else if (estado === 2) fila.push('X');
+            if (estado === 1) fila.push('A'); 
+            else if (estado === 2) fila.push('F');
             else if (estado === 3) fila.push('J');
             else fila.push('-'); 
         });
@@ -3182,10 +3301,130 @@ function exportarAsistenciaMesPDF() {
         headStyles: { fillColor: [107, 33, 51] } 
     });
 
-    doc.save(`Asistencia_${curso}_Mes_${mesActual}_${anioActual}.pdf`);
+    // === EL TRUCO MAESTRO: API NATIVA DE ANDROID ===
+    let nombreArchivo = `Asistencia_${curso}_Mes_${mesActual}_${anioActual}.pdf`;
+    let blobPDF = doc.output('blob'); // Lo convertimos en un archivo real, no en texto
+    
+    // Verificamos si el celular soporta abrir el menú nativo de compartir
+    let archivo = new File([blobPDF], nombreArchivo, { type: 'application/pdf' });
+    
+    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
+        // Abre la bandeja de abajo de Android
+        navigator.share({
+            files: [archivo],
+            title: nombreArchivo,
+            text: `Registro de asistencia de ${curso} generado desde la App.`
+        }).catch((err) => {
+            console.log('El usuario cerró el menú', err);
+            // Si algo falla, usamos FileSaver como respaldo
+            window.saveAs(blobPDF, nombreArchivo);
+        });
+    } else {
+        // Si el celular es muy antiguo, fuerza la descarga directa
+        window.saveAs(blobPDF, nombreArchivo);
+    }
 }
 
-
 </script>
+
+<script>
+    // 1. FUNCIÓN QUE ABRE EL PANEL
+    window.renderAlertasPanel = function(courseName) {
+        window.currentCourseAlertasName = courseName;
+        var panel = document.getElementById('alertasManager');
+        var label = document.getElementById('alertasCourseLabel');
+        
+        if(panel) panel.style.display = 'block';
+        if(label) label.innerText = courseName;
+    };
+
+    // 2. FUNCIÓN DE IA PARA TAREAS Y DISCIPLINA
+    window.enviarAlertasPerplexity = function() {
+        let course = window.currentCourseAlertasName;
+        if (!course) { alert("Error: Selecciona un curso primero."); return; }
+
+        let tareasGuardadas = JSON.parse(localStorage.getItem('tareas_pendientes')) || {};
+        let disciplinaGuardada = JSON.parse(localStorage.getItem('reportes_disciplina')) || {};
+
+        let tareas = tareasGuardadas[course] ? tareasGuardadas[course].filter(t => !t.hecha) : [];
+        let reportes = disciplinaGuardada[course] ? disciplinaGuardada[course] : [];
+
+        let prompt = `Soy docente de un institución educativa. Hazme un análisis de caso de alerta de lo siguiente, del curso o materia: ${course}:\n\n`;
+        
+        if (tareas.length === 0 && reportes.length === 0) {
+            prompt += "Actualmente no hay estudiantes con tareas pendientes ni reportes de disciplina. Escribe un breve mensaje de felicitación para el curso.";
+        } else {
+            if (tareas.length > 0) {
+                prompt += "TAREAS PENDIENTES:\n";
+                tareas.forEach(t => prompt += `- ${t.student}: ${t.task}\n`);
+            }
+            if (reportes.length > 0) {
+                prompt += "\nREPORTES DE DISCIPLINA:\n";
+                reportes.forEach(r => prompt += `- ${r.student}: ${r.desc}\n`);
+            }
+            prompt += "\nGenera un resumen ejecutivo primero hazlo por cada estudiante, presentamelos en esta estructura: 1. Análisis del desempeño académico: Identificar frecuencia, Detectar patrones en relacion a los temas. 2. Análisis del comportamiento disciplinario. 3. Conclusión del análisis, en un parrafo. 4. Sugerencia de intervención.";
+        }
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    };
+
+    // 3. NUEVA FUNCIÓN DE IA PARA ASISTENCIAS
+    window.enviarAsistenciaPerplexity = function() {
+        let course = window.currentCourseAlertasName;
+        if (!course) { alert("Error: Selecciona un curso primero."); return; }
+
+        let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+        let datosCurso = historialGlobal[course] || {};
+        let todosLosEstudiantes = JSON.parse(localStorage.getItem('students_data')) || {};
+        let estudiantes = todosLosEstudiantes[course] || [];
+        
+        let fechas = Object.keys(datosCurso);
+        if (fechas.length === 0 || estudiantes.length === 0) {
+            alert("No hay registros de asistencia para este curso aún.");
+            return;
+        }
+
+        // Calcular asistencias
+        let resumenAsistencia = {};
+        estudiantes.forEach(est => {
+            resumenAsistencia[est] = { presentes: 0, faltas: 0, justificadas: 0, total: 0 };
+        });
+
+        fechas.forEach(fecha => {
+            estudiantes.forEach(est => {
+                let estado = datosCurso[fecha][est];
+                // 1=Presente, 2=Falta, 3=Justificada
+                if (estado === 1 || estado === 2 || estado === 3) {
+                    resumenAsistencia[est].total++;
+                    if (estado === 1) resumenAsistencia[est].presentes++;
+                    if (estado === 2) resumenAsistencia[est].faltas++;
+                    if (estado === 3) resumenAsistencia[est].justificadas++;
+                }
+            });
+        });
+
+        let prompt = `Actúa como asesor pedagógico. Revisa el reporte de asistencia histórica del curso ${course}:\n\n`;
+        let hayDatos = false;
+
+        estudiantes.forEach(est => {
+            let datos = resumenAsistencia[est];
+            if (datos.total > 0) {
+                hayDatos = true;
+                // Calculamos porcentaje sumando presentes + justificadas
+                let porcentaje = Math.round(((datos.presentes + datos.justificadas) / datos.total) * 100);
+                prompt += `- ${est}: ${porcentaje}% de asistencia (${datos.faltas} faltas y ${datos.justificadas} faltas justificadas, en un total de ${datos.total} clases).\n`;
+            }
+        });
+
+        if (!hayDatos) {
+            alert("Aunque hay fechas creadas, aún no se ha marcado la asistencia de ningún estudiante.");
+            return;
+        }
+
+        prompt += "\nGenera un resumen ejecutivo de un párrafo para el tutor del curso. Señala únicamente a los estudiantes que tengan un porcentaje de asistencia preocupante y sugiere 2 estrategias para mejorar el presentismo en el aula, si me vas a hablar de estudiantes en específico que consideres, deja saltos de linea.";
+
+        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+    };
+</script>
+
 </body>
 </html>
