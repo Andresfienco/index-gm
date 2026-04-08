@@ -9,6 +9,8 @@
     <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
     <script src="https://unpkg.com/docx@7.8.2/build/index.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.5/FileSaver.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 
     <style>
         :root {
@@ -167,6 +169,67 @@
         .tema-tratado-item textarea, .area-tema-item textarea { font-family: Arial, sans-serif; resize: vertical; }
         
         .manage-btn-group { display:flex; flex-direction:column; gap:5px; margin-left:auto; }
+
+         /* =========================================
+   ESTILOS DEL MÓDULO DE ASISTENCIA
+   ========================================= */
+
+/* Fila de cada estudiante */
+.fila-asistencia {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 10px;
+    border-bottom: 1px solid #eee;
+    transition: background-color 0.2s ease;
+    border-radius: 4px;
+}
+
+.fila-asistencia:hover {
+    background-color: var(--surface); /* Usa el color crema que ya tienes */
+}
+
+/* Diseño base del botón de estado (Presente, Faltó, etc.) */
+.btn-estado-asistencia {
+    padding: 6px 12px;
+    border: none;
+    border-radius: 4px;
+    font-weight: bold;
+    font-size: 0.85em;
+    cursor: pointer;
+    width: 110px; /* Ancho fijo para que los botones no salten al cambiar el texto */
+    transition: all 0.2s ease;
+    color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+
+.btn-estado-asistencia:hover {
+    filter: brightness(1.1);
+}
+
+/* Colores según el estado */
+.btn-estado-asistencia.estado-0 {
+    background-color: #9e9e9e; /* Gris: Sin marcar */
+}
+
+.btn-estado-asistencia.estado-1 {
+    background-color: var(--success); /* Verde: Presente */
+}
+
+.btn-estado-asistencia.estado-2 {
+    background-color: #d32f2f; /* Rojo: Faltó */
+}
+
+.btn-estado-asistencia.estado-3 {
+    background-color: #f57c00; /* Naranja: Justificado */
+}
+
+/* Efecto para seleccionar una fila y ver su estadística individual */
+.fila-asistencia.seleccionada {
+    background-color: #e3d5c8; /* Un tono sutil para destacar */
+    border-left: 4px solid var(--primary);
+}
+
     </style>
 </head>
 <body>
@@ -279,13 +342,14 @@
 </div>
 
 <div class="container">
-    <h2 onclick="alert('Developed by: ⛩️ Andrés Fienco\nBuilt in: Android Studio\nPowered by: Android\nversion: 8.53')" title="Ver créditos">Unidad Educativa Particular</br>"García Moreno"</h2>
+    <h2 onclick="alert('Developed by: ⛩️ Andrés Fienco\nBuilt in: Android Studio\nPowered by: Poco F8 pro\nversion: 8.53')" title="Ver créditos">Unidad Educativa Particular</br>"García Moreno"</h2>
         
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('dailyView')">1. Diario</button>
         <button class="tab-btn" onclick="switchTab('listView')">2. Notas</button>
         <button class="tab-btn" onclick="switchTab('missingTasks')">3. Tareas</button>
         <button class="tab-btn" onclick="switchTab('disciplineView')">4. Reportes</button>
+        <button class="tab-btn" onclick="switchTab('asistenciaView')">5. Asistencia</button>
     </div>
     </br>
     <div style="display: flex; justify-content: center; margin-bottom: 25px; margin-top: -10px;">
@@ -396,6 +460,65 @@
             <div id="disciplineRecordsList" class="task-list"></div>
         </div>
     </div>
+
+
+<div id="asistenciaView" class="tab-content">
+    <h2 style="color: var(--primary);">Control de Asistencia</h2>
+
+    <div id="vista-cursos-asistencia">
+        <p>Selecciona un curso cargado en la planificación para tomar asistencia:</p>
+        <div id="contenedor-botones-cursos-asistencia" style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 15px;">
+        </div>
+    </div>
+
+    <div id="vista-detalle-asistencia" style="display: none;">
+        
+        <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--secondary); padding-bottom: 10px; margin-bottom: 15px;">
+            <h3 id="titulo-curso-asistencia" style="color: var(--primary); margin: 0;">Curso</h3>
+            <span id="fecha-actual-asistencia" style="font-weight: bold; color: var(--text);"></span>
+        </div>
+
+        <div style="margin-bottom: 20px;">
+            <button onclick="volverACursosAsistencia()" class="tab-btn" style="background: gray; color: white;">⬅ Volver a Cursos</button>
+            <button onclick="marcarTodosAsistieron()" class="tab-btn" style="background: var(--success); color: white; margin-left: 10px;">✔ Marcar todos como Asistieron</button>
+        </div>
+
+        <div style="display: flex; gap: 20px; flex-wrap: wrap; align-items: flex-start;">
+            
+            <div style="flex: 2; min-width: 300px; background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                <h4 style="margin-top: 0; color: var(--secondary);">Estudiantes</h4>
+                <div id="lista-estudiantes-asistencia" style="display: flex; flex-direction: column; gap: 8px;">
+                    </div>
+            </div>
+
+            <div style="flex: 1; min-width: 250px; display: flex; flex-direction: column; gap: 15px;">
+                
+                <div style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                    <h4 style="margin-top: 0; color: var(--secondary); border-bottom: 1px solid #eee; padding-bottom: 5px;">Asistencia del Día</h4>
+                    <ul style="list-style: none; padding: 0; margin: 0; line-height: 2;">
+                        <li><strong>Asistió:</strong> <span id="stat-dia-asistio" style="color: var(--success); font-weight: bold;">0%</span></li>
+                        <li><strong>Faltó:</strong> <span id="stat-dia-falto" style="color: red; font-weight: bold;">0%</span></li>
+                        <li><strong>Justificó:</strong> <span id="stat-dia-justifico" style="color: orange; font-weight: bold;">0%</span></li>
+                    </ul>
+                </div>
+
+                <div id="contenedor-stat-historica" style="background: white; padding: 15px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: 0.3s;">
+                    <h4 id="titulo-stat-historica" style="margin-top: 0; color: var(--secondary); border-bottom: 1px solid #eee; padding-bottom: 5px;">Historial del Curso</h4>
+                    <p id="subtitulo-stat-historica" style="font-size: 0.85em; color: #666; margin-top: 5px; margin-bottom: 10px;">(Toca un nombre para ver su historial individual)</p>
+                    <ul style="list-style: none; padding: 0; margin: 0; line-height: 2;">
+                        <li><strong>Asistió:</strong> <span id="stat-hist-asistio" style="color: var(--success); font-weight: bold;">0%</span></li>
+                        <li><strong>Faltó:</strong> <span id="stat-hist-falto" style="color: red; font-weight: bold;">0%</span></li>
+                        <li><strong>Justificó:</strong> <span id="stat-hist-justifico" style="color: orange; font-weight: bold;">0%</span></li>
+                    </ul>
+                    <button id="btn-volver-stat-curso" onclick="mostrarEstadisticaGeneralCurso()" class="tab-btn" style="display: none; width: 100%; margin-top: 15px; font-size: 0.85em;">Ver general del curso</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
 
     <div id="documentationView" class="tab-content">
         <div class="course-buttons" style="justify-content: center; margin-bottom: 10px;">
@@ -1087,35 +1210,79 @@ Condiciones obligatorias:
     // ==========================================
     // LÓGICA DE ALERTAS
     // ==========================================
-    function renderAlertasPanel(courseName) {
-        currentCourseAlertasName = courseName;
-        document.getElementById('alertasManager').style.display = 'block';
-        document.getElementById('alertasCourseLabel').innerText = courseName;
+    // 1. CARGA AUTOMÁTICA (EXTRAE CURSOS EXACTAMENTE DESDE LA 2DA COLUMNA)
+function inicializarAsistenciaAutomaticamente() {
+    window.baseDeDatosAsistencia = {}; 
+    let planificacion = null;
+    let estudiantes = null;
+
+    // Buscar los dos archivos en la memoria del navegador
+    for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        let val = localStorage.getItem(key);
+        try {
+            let parsed = JSON.parse(val);
+            if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(parsed[0])) {
+                let primeraCelda = String(parsed[0][0] || "").toLowerCase();
+                
+                // Si la primera celda de la matriz dice "fecha", sabemos que es la Planificación (1A)
+                if (primeraCelda.includes("fecha")) {
+                    planificacion = parsed;
+                } 
+                // Si no tiene "fecha" y tiene varias filas, sabemos que son los Estudiantes (1B)
+                else if (parsed.length > 2) {
+                    estudiantes = parsed;
+                }
+            }
+        } catch(e) {}
     }
 
-    window.enviarAlertasPerplexity = function() {
-        if (!currentCourseAlertasName) return;
+    if (!planificacion || !estudiantes) return; // Si falta algún archivo, no hace nada
 
-        const tareas = (pendingTasks[currentCourseAlertasName] || []).filter(t => !t.hecha);
-        let listaTareas = "";
-        if (tareas.length > 0) {
-            listaTareas = tareas.map(t => `- ${t.student}: ${t.task}`).join('\n');
-        } else {
-            listaTareas = "No hay casos de tareas no presentadas.";
+    // ---------------------------------------------------------
+    // AQUÍ ESTÁ LA SOLUCIÓN EXACTA A TU PROBLEMA:
+    // planificacion[0] = Primera Fila.
+    // .slice(1) = Desde la 2da columna en adelante.
+    // ---------------------------------------------------------
+    let cursosCrudos = planificacion[0].slice(1); 
+    
+    // Limpiamos por si el CSV tiene columnas vacías extras al final (;;;)
+    let cursos = cursosCrudos.filter(c => c && c.trim() !== "");
+
+    // Preparamos los cursos en nuestra base de datos
+    cursos.forEach(curso => { 
+        window.baseDeDatosAsistencia[curso.trim()] = []; 
+    });
+
+    // Llenamos a los estudiantes en su curso correspondiente
+    for (let f = 0; f < estudiantes.length; f++) {
+        for (let c = 0; c < cursos.length; c++) {
+            let curso = cursos[c];
+            // Estudiantes columna 0 = Curso columna 1 (porque ya cortamos la primera)
+            let estudiante = estudiantes[f][c]; 
+            
+            if (curso && estudiante && String(estudiante).trim() !== "") {
+                window.baseDeDatosAsistencia[curso.trim()].push(String(estudiante).trim());
+            }
         }
+    }
 
-        const reportes = disciplineRecords[currentCourseAlertasName] || [];
-        let listaReportes = "";
-        if (reportes.length > 0) {
-            listaReportes = reportes.map(r => `- ${r.student}: ${r.desc} (Fecha: ${r.date})`).join('\n');
-        } else {
-            listaReportes = "No hay reportes de inspección.";
-        }
-
-        const prompt = `Soy docente de un institución educativa. Hazme un análisis de caso de alerta de lo siguiente, de ${currentCourseAlertasName} tengo los siguientes casos:\n${listaTareas}\ny estos casos de inspección:\n${listaReportes}, primero hazlo por cada estudiante, presentamelos en esta estructura: 1. Análisis del desempeño académico: Identificar frecuencia, Detectar patrones en relacion a los temas. 2. Análisis del comportamiento disciplinario. 3. Conclusión del análisis. Sugerencia de intervención.`;
-
-        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
-    };
+    // Crear los botones en la pantalla
+    const contenedorCursos = document.getElementById('contenedor-botones-cursos-asistencia');
+    if (contenedorCursos) {
+        contenedorCursos.innerHTML = ''; 
+        cursos.forEach(curso => {
+            let btn = document.createElement('button');
+            btn.textContent = curso.trim();
+            btn.className = "tab-btn";
+            btn.style.background = "var(--secondary)";
+            btn.style.color = "white";
+            btn.style.margin = "5px";
+            btn.onclick = () => abrirCursoAsistencia(curso.trim());
+            contenedorCursos.appendChild(btn);
+        });
+    }
+}
 
     // ==========================================
     // CARGA DE ARCHIVOS Y CONFIGURACIÓN CSV
@@ -2585,6 +2752,440 @@ Condiciones obligatorias:
             if(isModal && deletedStudent) showGlobalStudentDisciplineHistory(deletedStudent);
         }
     };
+
+
+/* =========================================
+   LÓGICA DEL MÓDULO DE ASISTENCIA (INTEGRADA A LA CARGA CSV)
+   ========================================= */
+
+const textosAsistencia = ["Sin marcar", "Presente", "Faltó", "Justificó"];
+window.cursoActualAsistencia = ""; 
+window.fechaActualAsistencia = "";
+// baseDeDatosAsistencia la construiremos usando studentsData 
+
+function inicializarAsistenciaAutomaticamente() {
+    const contenedorCursos = document.getElementById('contenedor-botones-cursos-asistencia');
+    if (!contenedorCursos) return;
+
+    // 1. Verificamos que los datos del CSV hayan sido cargados
+    if (typeof headers === 'undefined' || !headers || headers.length === 0) return;
+    if (typeof studentsData === 'undefined' || !studentsData || Object.keys(studentsData).length === 0) return;
+
+    contenedorCursos.innerHTML = ''; 
+
+    // 2. Extraemos los cursos del array "headers" de la planificación (omitimos la primera columna de fechas)
+    let cursosEncontrados = [];
+    for (let i = 1; i < headers.length; i++) {
+        let curso = headers[i]?.trim();
+        // Evitamos columnas vacías o la columna "entorno" si la usas como en buildScheduleConfig
+        if (curso && curso.toLowerCase() !== 'entorno' && curso !== ';;;') {
+            cursosEncontrados.push(curso);
+        }
+    }
+
+    // 3. Dibujamos los botones en la pantalla
+    cursosEncontrados.forEach(curso => {
+        let btn = document.createElement('button');
+        btn.textContent = curso;
+        btn.className = "tab-btn"; // Usamos tu clase visual
+        btn.style.background = "var(--secondary)";
+        btn.style.color = "white";
+        btn.style.margin = "5px";
+        btn.onclick = () => abrirCursoAsistencia(curso);
+        contenedorCursos.appendChild(btn);
+    });
+}
+
+// Escuchamos el evento de carga para que los botones se creen apenas termine de leer el CSV
+document.addEventListener('DOMContentLoaded', inicializarAsistenciaAutomaticamente);
+// Y un reintento en caso de que tarde un poco más en cargar de localStorage
+setTimeout(inicializarAsistenciaAutomaticamente, 1000);
+
+// ==========================================
+// ABRIR EL DETALLE DE UN CURSO
+// ==========================================
+function abrirCursoAsistencia(curso, fechaSeleccionada = null) {
+    window.cursoActualAsistencia = curso;
+    document.getElementById('vista-cursos-asistencia').style.display = 'none';
+    document.getElementById('vista-detalle-asistencia').style.display = 'block';
+    document.getElementById('titulo-curso-asistencia').textContent = "Asistencia: " + curso;
+    
+    // LÓGICA DEL CALENDARIO
+    let fechaInput;
+    if (fechaSeleccionada) {
+        fechaInput = fechaSeleccionada;
+        // Convertir la fecha del calendario a formato local (ej: 7/4/2026) para que coincida con tu historial
+        let [y, m, d] = fechaInput.split('-');
+        let objFecha = new Date(y, m - 1, d);
+        window.fechaActualAsistencia = objFecha.toLocaleDateString('es-EC');
+    } else {
+        let hoy = new Date();
+        let y = hoy.getFullYear();
+        let m = String(hoy.getMonth() + 1).padStart(2, '0');
+        let d = String(hoy.getDate()).padStart(2, '0');
+        fechaInput = `${y}-${m}-${d}`;
+        window.fechaActualAsistencia = hoy.toLocaleDateString('es-EC');
+    }
+
+    // Dibujamos el calendario interactivo
+    document.getElementById('fecha-actual-asistencia').innerHTML = `
+        Fecha: <input type="date" id="input-fecha-asistencia" value="${fechaInput}" 
+        style="border: 1px solid var(--surface); border-radius: 5px; padding: 3px 8px; color: var(--primary); font-weight: bold; font-family: inherit; cursor: pointer; outline: none; background: white; margin-left: 5px;">
+    `;
+
+    // Cuando cambies la fecha en el calendario, recargamos la vista para ese día
+    document.getElementById('input-fecha-asistencia').addEventListener('change', function(e) {
+        abrirCursoAsistencia(curso, e.target.value);
+    });
+
+    const contenedor = document.getElementById('lista-estudiantes-asistencia');
+    contenedor.innerHTML = ''; 
+
+    // Leer estudiantes de memoria
+    let todosLosEstudiantes = JSON.parse(localStorage.getItem('students_data')) || {};
+    let estudiantes = todosLosEstudiantes[curso] || [];
+    estudiantes.sort(); 
+
+    if (estudiantes.length === 0) {
+        contenedor.innerHTML = '<p style="color: var(--secondary); font-style: italic;">No hay estudiantes cargados para este curso.</p>';
+        return;
+    }
+
+    let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    // Ahora leemos los datos correspondientes a la fecha seleccionada
+    let datosHoy = (historialGlobal[curso] && historialGlobal[curso][window.fechaActualAsistencia]) ? historialGlobal[curso][window.fechaActualAsistencia] : {};
+
+    estudiantes.forEach(estudiante => {
+        let fila = document.createElement('div');
+        fila.className = 'fila-asistencia';
+        fila.id = 'fila-asistencia-' + estudiante.replace(/\s+/g, '-');
+
+        let nombre = document.createElement('div');
+        nombre.textContent = estudiante;
+        nombre.style.cursor = "pointer";
+        nombre.style.fontWeight = "bold";
+        nombre.style.color = "var(--text)";
+        nombre.title = "Haz clic para ver su historial individual";
+        
+        nombre.onclick = () => {
+            document.querySelectorAll('.fila-asistencia').forEach(el => el.classList.remove('seleccionada'));
+            fila.classList.add('seleccionada');
+            mostrarEstadisticaEstudiante(estudiante);
+        };
+
+        let estadoInicial = datosHoy[estudiante] !== undefined ? datosHoy[estudiante] : 0;
+        let btn = document.createElement('button');
+        btn.className = `btn-estado-asistencia estado-${estadoInicial}`;
+        btn.dataset.estado = estadoInicial; 
+        btn.dataset.estudiante = estudiante;
+        btn.textContent = textosAsistencia[estadoInicial];
+
+        btn.onclick = function() {
+            let estadoActual = parseInt(this.dataset.estado);
+            let nuevoEstado = (estadoActual + 1) % 4; 
+            
+            this.dataset.estado = nuevoEstado;
+            this.className = `btn-estado-asistencia estado-${nuevoEstado}`;
+            this.textContent = textosAsistencia[nuevoEstado];
+            
+            guardarAsistenciaEnMemoria();
+            calcularEstadisticasAsistenciaDiaria(); 
+        };
+
+        fila.appendChild(nombre);
+        fila.appendChild(btn);
+        contenedor.appendChild(fila);
+    });
+
+    calcularEstadisticasAsistenciaDiaria(); 
+    mostrarEstadisticaGeneralCurso(); 
+}
+
+// 3. MARCAR A TODOS COMO ASISTIERON
+function marcarTodosAsistieron() {
+    let botones = document.querySelectorAll('.btn-estado-asistencia');
+    botones.forEach(btn => {
+        btn.dataset.estado = "1";
+        btn.className = "btn-estado-asistencia estado-1";
+        btn.textContent = textosAsistencia[1];
+    });
+    guardarAsistenciaEnMemoria();
+    calcularEstadisticasAsistenciaDiaria();
+}
+
+
+
+// 4. GUARDAR EN MEMORIA
+function guardarAsistenciaEnMemoria() {
+    let curso = window.cursoActualAsistencia;
+    // Usamos la variable global de la fecha
+    let fechaGuardar = window.fechaActualAsistencia || new Date().toLocaleDateString('es-EC');
+    
+    let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    if (!historialGlobal[curso]) historialGlobal[curso] = {};
+    if (!historialGlobal[curso][fechaGuardar]) historialGlobal[curso][fechaGuardar] = {};
+
+    let botones = document.querySelectorAll('.btn-estado-asistencia');
+    botones.forEach(btn => {
+        let estudiante = btn.dataset.estudiante;
+        let estado = parseInt(btn.dataset.estado);
+        historialGlobal[curso][fechaGuardar][estudiante] = estado;
+    });
+
+    localStorage.setItem('historial_asistencia_app', JSON.stringify(historialGlobal));
+    
+    if(document.getElementById('btn-volver-stat-curso').style.display === 'none') {
+        mostrarEstadisticaGeneralCurso();
+    }
+}
+
+// 5. CÁLCULO: ESTADÍSTICA DEL DÍA ACTUAL
+function calcularEstadisticasAsistenciaDiaria() {
+    let botones = document.querySelectorAll('.btn-estado-asistencia');
+    let total = botones.length;
+    let presentes = 0, faltas = 0, justificados = 0;
+
+    botones.forEach(btn => {
+        let estado = parseInt(btn.dataset.estado);
+        if(estado === 1) presentes++;
+        if(estado === 2) faltas++;
+        if(estado === 3) justificados++;
+    });
+
+    document.getElementById('stat-dia-asistio').textContent = total > 0 ? Math.round((presentes/total)*100) + "%" : "0%";
+    document.getElementById('stat-dia-falto').textContent = total > 0 ? Math.round((faltas/total)*100) + "%" : "0%";
+    document.getElementById('stat-dia-justifico').textContent = total > 0 ? Math.round((justificados/total)*100) + "%" : "0%";
+}
+
+// 6. CÁLCULO: HISTORIAL GLOBAL DEL CURSO
+function mostrarEstadisticaGeneralCurso() {
+    document.querySelectorAll('.fila-asistencia').forEach(el => el.classList.remove('seleccionada'));
+    document.getElementById('titulo-stat-historica').textContent = "Historial del Curso";
+    document.getElementById('subtitulo-stat-historica').style.display = "block";
+    document.getElementById('btn-volver-stat-curso').style.display = "none";
+
+    let curso = window.cursoActualAsistencia;
+    let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    let datosCurso = historialGlobal[curso] || {};
+
+    let presentes = 0, faltas = 0, justificados = 0, totalMarcados = 0;
+
+    Object.keys(datosCurso).forEach(fecha => {
+        Object.keys(datosCurso[fecha]).forEach(est => {
+            let estd = datosCurso[fecha][est];
+            if (estd === 1) { presentes++; totalMarcados++; }
+            if (estd === 2) { faltas++; totalMarcados++; }
+            if (estd === 3) { justificados++; totalMarcados++; }
+        });
+    });
+
+    document.getElementById('stat-hist-asistio').textContent = totalMarcados > 0 ? Math.round((presentes/totalMarcados)*100) + "%" : "0%";
+    document.getElementById('stat-hist-falto').textContent = totalMarcados > 0 ? Math.round((faltas/totalMarcados)*100) + "%" : "0%";
+    document.getElementById('stat-hist-justifico').textContent = totalMarcados > 0 ? Math.round((justificados/totalMarcados)*100) + "%" : "0%";
+
+    // AGREGAR BOTÓN DE EXPORTAR
+    let contenedorStats = document.getElementById('btn-volver-stat-curso').parentNode;
+    let btnExportar = document.getElementById('btn-exportar-asistencia');
+    if (!btnExportar) {
+        btnExportar = document.createElement('button');
+        btnExportar.id = 'btn-exportar-asistencia';
+        btnExportar.textContent = '📥 Exportar Mes a Excel';
+        btnExportar.style.marginTop = '15px';
+        btnExportar.style.width = '100%';
+        btnExportar.style.padding = '10px';
+        btnExportar.style.background = 'var(--success)';
+        btnExportar.style.color = 'white';
+        btnExportar.style.border = 'none';
+        btnExportar.style.borderRadius = '5px';
+        btnExportar.style.cursor = 'pointer';
+        btnExportar.style.fontWeight = 'bold';
+        btnExportar.onclick = exportarAsistenciaMes;
+        contenedorStats.appendChild(btnExportar);
+    }
+    btnExportar.style.display = 'block';
+// BOTÓN DE PDF (NUEVO)
+    let btnExportarPDF = document.getElementById('btn-exportar-asistencia-pdf');
+    if (!btnExportarPDF) {
+        btnExportarPDF = document.createElement('button');
+        btnExportarPDF.id = 'btn-exportar-asistencia-pdf';
+        btnExportarPDF.textContent = '📄 Exportar Mes a PDF';
+        btnExportarPDF.style.marginTop = '10px';
+        btnExportarPDF.style.width = '100%';
+        btnExportarPDF.style.padding = '10px';
+        btnExportarPDF.style.background = 'var(--primary)'; // Color rojo vino
+        btnExportarPDF.style.color = 'white';
+        btnExportarPDF.style.border = 'none';
+        btnExportarPDF.style.borderRadius = '5px';
+        btnExportarPDF.style.cursor = 'pointer';
+        btnExportarPDF.style.fontWeight = 'bold';
+        btnExportarPDF.onclick = exportarAsistenciaMesPDF;
+        contenedorStats.appendChild(btnExportarPDF);
+    }
+    btnExportarPDF.style.display = 'block';
+}
+
+// 7. CÁLCULO: HISTORIAL INDIVIDUAL
+function mostrarEstadisticaEstudiante(estudiante) {
+    document.getElementById('titulo-stat-historica').textContent = "Historial: " + estudiante;
+    document.getElementById('subtitulo-stat-historica').style.display = "none";
+    document.getElementById('btn-volver-stat-curso').style.display = "block"; 
+
+    // Ocultamos el botón de exportar Excel
+    let btnExportar = document.getElementById('btn-exportar-asistencia');
+    if(btnExportar) btnExportar.style.display = 'none';
+    let btnExportarPDF = document.getElementById('btn-exportar-asistencia-pdf');
+    if(btnExportarPDF) btnExportarPDF.style.display = 'none';
+
+    let curso = window.cursoActualAsistencia;
+    let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    let datosCurso = historialGlobal[curso] || {};
+
+    let presentes = 0, faltas = 0, justificados = 0, totalMarcados = 0;
+
+    Object.keys(datosCurso).forEach(fecha => {
+        let estd = datosCurso[fecha][estudiante];
+        if (estd === 1) { presentes++; totalMarcados++; }
+        if (estd === 2) { faltas++; totalMarcados++; }
+        if (estd === 3) { justificados++; totalMarcados++; }
+    });
+
+    document.getElementById('stat-hist-asistio').textContent = totalMarcados > 0 ? Math.round((presentes/totalMarcados)*100) + "%" : "0%";
+    document.getElementById('stat-hist-falto').textContent = totalMarcados > 0 ? Math.round((faltas/totalMarcados)*100) + "%" : "0%";
+    document.getElementById('stat-hist-justifico').textContent = totalMarcados > 0 ? Math.round((justificados/totalMarcados)*100) + "%" : "0%";
+}
+
+// 8. VOLVER AL MENÚ
+function volverACursosAsistencia() {
+    window.cursoActualAsistencia = "";
+    document.getElementById('vista-detalle-asistencia').style.display = 'none';
+    document.getElementById('vista-cursos-asistencia').style.display = 'block';
+}
+
+// 9. EXPORTAR A EXCEL (CSV)
+function exportarAsistenciaMes() {
+    let curso = window.cursoActualAsistencia;
+    if (!curso) return;
+
+    // Saber en qué mes y año estamos según el calendario
+    let fechaBase = window.fechaActualAsistencia || new Date().toLocaleDateString('es-EC');
+    let partesFecha = fechaBase.split('/'); 
+    let mesActual = partesFecha[1];
+    let anioActual = partesFecha[2];
+
+    let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    let datosCurso = historialGlobal[curso] || {};
+
+    // Buscar solo las fechas que coincidan con el mes y año que estamos viendo
+    let fechasDelMes = Object.keys(datosCurso).filter(fecha => {
+        let p = fecha.split('/');
+        return p[1] === mesActual && p[2] === anioActual;
+    });
+
+    // Ordenar los días del menor al mayor (1, 2, 3...)
+    fechasDelMes.sort((a, b) => parseInt(a.split('/')[0]) - parseInt(b.split('/')[0]));
+
+    if (fechasDelMes.length === 0) {
+        alert('No hay asistencias marcadas en este mes para exportar.');
+        return;
+    }
+
+    // Traer estudiantes
+    let todosLosEstudiantes = JSON.parse(localStorage.getItem('students_data')) || {};
+    let estudiantes = todosLosEstudiantes[curso] || [];
+    estudiantes.sort();
+
+    // Armar matriz de datos para Excel
+    let datosCsv = [];
+    
+    // Encabezados: "Estudiante" y luego las fechas
+    let encabezados = ['Estudiante', ...fechasDelMes];
+    datosCsv.push(encabezados);
+
+    // Llenar datos de cada estudiante
+    estudiantes.forEach(est => {
+        let fila = [est];
+        fechasDelMes.forEach(fecha => {
+            let estado = datosCurso[fecha][est];
+            if (estado === 1) fila.push('✓');
+            else if (estado === 2) fila.push('X');
+            else if (estado === 3) fila.push('J');
+            else fila.push('-'); // Si no se marcó nada ese día
+        });
+        datosCsv.push(fila);
+    });
+
+    // Convertir a Excel usando PapaParse y descargar
+    let csv = Papa.unparse(datosCsv);
+    // Agregamos \uFEFF para que Excel lea perfectamente las tildes y las ñ
+    let blob = new Blob(["\uFEFF" + csv], { type: 'text/csv;charset=utf-8;' }); 
+    saveAs(blob, `Asistencia_${curso}_Mes_${mesActual}_${anioActual}.csv`);
+}
+
+// EXPORTAR A PDF
+function exportarAsistenciaMesPDF() {
+    let curso = window.cursoActualAsistencia;
+    if (!curso) return;
+
+    let fechaBase = window.fechaActualAsistencia || new Date().toLocaleDateString('es-EC');
+    let partesFecha = fechaBase.split('/'); 
+    let mesActual = partesFecha[1];
+    let anioActual = partesFecha[2];
+
+    let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    let datosCurso = historialGlobal[curso] || {};
+
+    let fechasDelMes = Object.keys(datosCurso).filter(fecha => {
+        let p = fecha.split('/');
+        return p[1] === mesActual && p[2] === anioActual;
+    });
+
+    fechasDelMes.sort((a, b) => parseInt(a.split('/')[0]) - parseInt(b.split('/')[0]));
+
+    if (fechasDelMes.length === 0) {
+        alert('No hay asistencias marcadas en este mes para exportar.');
+        return;
+    }
+
+    let todosLosEstudiantes = JSON.parse(localStorage.getItem('students_data')) || {};
+    let estudiantes = todosLosEstudiantes[curso] || [];
+    estudiantes.sort();
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF('landscape'); 
+
+    doc.setFontSize(16);
+    doc.text(`Registro de Asistencia - ${curso}`, 14, 15);
+    doc.setFontSize(11);
+    doc.text(`Mes: ${mesActual} / Año: ${anioActual}`, 14, 22);
+
+    let encabezados = [['Estudiante', ...fechasDelMes.map(f => f.split('/')[0])]]; 
+    let datosPdf = [];
+
+    estudiantes.forEach(est => {
+        let fila = [est];
+        fechasDelMes.forEach(fecha => {
+            let estado = datosCurso[fecha][est];
+            if (estado === 1) fila.push('V'); 
+            else if (estado === 2) fila.push('X');
+            else if (estado === 3) fila.push('J');
+            else fila.push('-'); 
+        });
+        datosPdf.push(fila);
+    });
+
+    doc.autoTable({
+        head: encabezados,
+        body: datosPdf,
+        startY: 28,
+        styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
+        columnStyles: { 0: { halign: 'left', cellWidth: 50 } }, 
+        headStyles: { fillColor: [107, 33, 51] } 
+    });
+
+    doc.save(`Asistencia_${curso}_Mes_${mesActual}_${anioActual}.pdf`);
+}
+
+
 </script>
 </body>
 </html>
