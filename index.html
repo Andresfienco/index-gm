@@ -2,7 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
     <title> APP Académica - Unidad Educativa Particular "García Moreno"</title>
     
     <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
@@ -27,6 +27,8 @@
             padding: 10px;
             background-color: var(--bg);
             color: var(--text);
+    padding-top: env(safe-area-inset-top, 25px); /* Empuja abajo del notch */
+    padding-bottom: env(safe-area-inset-bottom, 15px);
         }
         h2 { color: var(--primary); text-align: center; font-size: 22px; }
         .container {
@@ -35,7 +37,7 @@
             position: relative;
         }
         
-        .config-btn {
+       .config-btn {
             position: fixed !important; top: 15px !important; right: 15px !important; 
             background: transparent; color: var(--primary);
             border: none; border-radius: 50%; width: 45px; height: 45px; font-size: 32px;
@@ -232,7 +234,29 @@
 
     </style>
 </head>
-<body>
+
+
+<body ...> <div id="app-lock-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #6b2133; color: white; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; font-family: sans-serif;">
+    <h3>Sistema Protegido -<i> ⛩️ Andrés Fienco </i> </h3>
+    <p>Por favor, suba el key para continuar.</p>
+    <input type="file" id="key-upload" accept=".csv" style="margin-top: 20px; background: white; color: black; padding: 10px; border-radius: 5px;">
+<div style="margin-top: 25px; border-top: 1px solid #ddd; padding-top: 15px;">
+            <p style="color: var(--primary); font-size: 14px; margin-bottom: 10px;">O ingresa la contraseña de acceso:</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <input type="password" id="masterPasswordInput" placeholder="Escribe la contraseña..." 
+                       style="padding: 10px; border: 1px solid #ccc; border-radius: 8px; outline: none; width: 60%;">
+                <button onclick="validarContrasenaMaestra()" 
+                        style="background: var(--primary); color: white; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: bold;">
+                    Entrar
+                </button>
+            </div>
+        </div>
+<p id="lock-error" style="color: red; display: none; margin-top: 15px;">Archivo no válido o contraseña incorrecta.</p>
+    </div>
+</div>
+
+
+
 
 <button class="config-btn" onclick="toggleConfigModal()" title="Configuración">⚙️</button>
 
@@ -240,7 +264,7 @@
     <div class="modal-content" style="max-width: 650px;">
         <button class="close-modal" onclick="toggleConfigModal()">×</button>
         <h3 style="line-height: 0.5; color: var(--primary); margin-top: 0;">Configuración del Sistema</h3> 
-        <div style="font-size: 11px; margin-bottom: -5px; color: #666; line-height: 1.5;"> <i> Developed by: Andres Fienco </i></div>
+        
         <div class="controls upload-box" id="uploadSectionPlan">
             <label><strong>Paso 1A:</strong> Cargar archivo CSV de Planificación</label>
             <input type="file" id="csvFileInput" accept=".csv">
@@ -258,7 +282,7 @@
 
         <div class="controls upload-box" style="margin-top: 15px; margin-bottom: 15px; background: #fafafa;">
             <label><strong>Datos Generales del Docente:</strong></label>
-            <input type="text" id="teacherNameInput" placeholder="Nombre del Docente, (Ej: Ing. Carlos Andrés Fienco)" style="margin-bottom: 5px;">
+            <input type="text" id="teacherNameInput" placeholder="Nombre del Docente, (Ej: Ing. Andrés Fienco)" style="margin-bottom: 5px;">
             <input type="text" id="teacherPhoneInput" placeholder="Teléfono personal (Ej: 099...)" style="margin-bottom: 15px;">
 
             <label><strong>Datos del Inspector General:</strong></label>
@@ -267,7 +291,6 @@
 
             <label><strong>Link de Cuaderno de Trabajo:</strong></label>
             <input type="text" id="WorkbookNameInput" placeholder="www.google.com/drive/098483" style="margin-bottom: 5px;">
-
         </div>
 
         <div id="scheduleConfigContainer" style="display:none; margin-top: 20px;">
@@ -276,7 +299,23 @@
             <div id="courseSchedules" class="schedule-grid"></div>
             <button class="btn-action" style="width: 100%; margin-top: 10px;" onclick="saveSchedules()">Guardar Configuración Completa</button>
         </div>
-    </div>
+
+        <div style="background: #f4f4f4; padding: 15px; border-radius: 8px; margin-top: 25px; border: 1px solid #ddd; text-align: center;">
+            <h3 style="color: var(--primary); margin-top: 0; margin-bottom: 10px;">💾 Respaldo de Seguridad</h3>
+                     
+            <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                <button class="btn-success" style="flex: 1; padding: 12px; font-size: 15px; min-width: 140px;" onclick="exportarDatosJSON()">
+                    ⬇️ Crear Respaldo
+                </button>
+                
+                <button class="btn-info" style="flex: 1; padding: 12px; font-size: 15px; background-color: var(--secondary); min-width: 140px;" onclick="document.getElementById('input-cargar-respaldo').click()">
+                    ⬆️ Cargar Respaldo
+                </button>
+            </div>
+            
+            <input type="file" id="input-cargar-respaldo" accept=".json" style="display: none;" onchange="importarDatosJSON(event)">
+        </div>
+        </div>
 </div>
 
 <div id="manageStudentsModal" class="modal">
@@ -341,10 +380,27 @@
     </div>
 </div>
 
-<div class="container">
-        <div style="font-size: 8px; margin-bottom: -10px; color: #666; line-height: 0.5;"> <i> Developed by: Andres Fienco </i></div>
-    <h2 onclick="alert('⛩️ Andrés Fienco:\nversion: 17.30\nPOR SEGURIDAD DE PERMISOS Y PRIVACIDAD, LA APP GUARDA INTERNAMENTE LOS DATOS, SI SE BORRA LA APP SE PIERDEN LOS DATOS')" title="Ver créditos">Unidad Educativa Particular</br>"García Moreno"</h2>
+
+<div class="container" style="text-align: left; position: relative; padding: 10px;">
+    <div style="font-size: 11px; color: #666; line-height: 1; margin-bottom: 0px;">
+        <i> Developed by: Andres Fienco </i>
+    </div>
+
+    <div style="display: flex; align-items: center; justify-content: center; min-height: 90px; gap: 0px;">
+
+        <img src="LOGO.png" alt="Logo" style="width: 60px; height: auto; position: absolute; left: 0;">
+
+        <h2 style="margin: 0; font-size: 1.3rem; line-height: 1.2; text-align: center; width: 100%;" 
+            onclick="alert('Este sistema ha sido desarrollado por: ⛩️ Andrés Fienco\n© 2026 Andrés Fienco. Todos los derechos reservados.\nQueda prohibida la reproducción total o parcial sin autorización.\nPor motivos de seguridad y privacidad, los datos se almacenan localmente. \nAl desinstalar la aplicación, se eliminarán permanentemente.')"
+            title="Ver créditos">
+            &nbsp; &nbsp;Unidad Educativa Particular<br>"García Moreno"
+        </h2>
         
+    </div>
+
+
+
+
     <div class="tabs">
         <button class="tab-btn active" onclick="switchTab('dailyView')">1. Diario</button>
         <button class="tab-btn" onclick="switchTab('listView')">2. Notas</button>
@@ -403,7 +459,7 @@
     <div id="missingTasks" class="tab-content">
         <div id="courseButtonsTasks" class="course-buttons"></div>
         
-        <div id="allTasksView">
+        <div id="allTasksView" style="display: block;">
             <h4 style="color: var(--primary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Resumen Global: Tareas Pendientes (Agrupado por Días)</h4>
             <div id="allTasksList" class="task-list"></div>
         </div>
@@ -521,19 +577,176 @@
 </div>
 
 
+<div id="portafolioView" class="tab-content" style="display: none; padding: 15px; background: white; border-radius: 8px;">
+    <h2 style="color: var(--primary); text-align: center; font-size: 24px; margin-bottom: 20px;">📁 Portafolio Docente</h2>
+    
+    <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 15px;">
+        <button class="btn-action" style="flex: 1; max-width: 200px;" onclick="mostrarSubPortafolio('sub-atencion')">ATENCIÓN</button>
+        <button class="btn-action" style="flex: 1; max-width: 200px;" onclick="mostrarSubPortafolio('sub-convocatoria')">CONVOCATORIA</button>
+    </div>
+    
+    <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap;">
+        <button class="btn-action" style="background-color: var(--secondary);" onclick="abrirNomina()">NÓMINA</button>
+        <button class="btn-action" style="background-color: var(--secondary);" onclick="prepararDirectiva('ESTUDIANTES')">DIR. ESTUDIANTES</button>
+        <button class="btn-action" style="background-color: var(--secondary);" onclick="prepararDirectiva('PADRES DE FAMILIA')">DIR. PADRES</button>
+        <button class="btn-action" style="background-color: var(--secondary);" onclick="abrirCobros()">COBROS</button>
+    </div>
+
+    <div id="sub-nomina" style="display:none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 15px;">
+        <h3 style="color: var(--primary);">🖨️ Imprimir Nómina</h3>
+        <p style="font-size: 14px; color: #555;">Seleccione un curso para generar la lista:</p>
+        <div id="nomina-cursos-container" class="course-buttons" style="justify-content: center;"></div>
+        <div id="nomina-print-container" style="display:none; text-align: center; margin-top: 20px;">
+            <h4 id="nomina-curso-seleccionado-titulo" style="color: var(--secondary);"></h4>
+            <button class="btn-success" style="font-size: 16px; padding: 12px 20px; width: 100%; max-width: 300px;" onclick="imprimirNominaPDF()">Descargar PDF de Nómina</button>
+        </div>
+    </div>
+
+    <div id="sub-convocatoria" style="display:none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 15px;">
+        <h3 style="color: var(--primary); text-align:center;">Generar Convocatoria</h3>
+        <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+            <div style="flex: 1;"><label style="font-weight: bold; font-size: 13px; color: var(--primary);">Fecha:</label><input type="date" id="conv-fecha"></div>
+            <div style="flex: 1;"><label style="font-weight: bold; font-size: 13px; color: var(--primary);">Hora:</label><input type="time" id="conv-hora"></div>
+        </div>
+        <div style="margin-bottom: 15px;"><label style="font-weight: bold; font-size: 13px; color: var(--primary);">Tema de Convocatoria:</label><input type="text" id="conv-tema" placeholder="Ej. Entrega de Boletines" style="margin-top: 5px;"></div>
+        <div style="margin-bottom: 15px;"><label style="font-weight: bold; font-size: 13px; color: var(--primary);">Detalle (Opcional):</label><textarea id="conv-detalle" rows="2" placeholder="Breve descripción..." style="width: 100%; padding: 10px; margin-top: 5px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit;"></textarea></div>
+        <div style="margin-bottom: 15px;">
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Puntos a tratar:</label>
+            <div id="conv-puntos-container" style="margin-top: 5px;">
+                <div class="punto-item" style="display: flex; gap: 5px; margin-bottom: 8px;">
+                    <input type="text" class="punto-input" placeholder="Punto 1">
+                    <button onclick="eliminarPunto(this)" class="btn-delete" style="width: 40px; padding: 0;">✕</button>
+                </div>
+            </div>
+            <button onclick="agregarPunto()" class="btn-info" style="margin-top: 5px;">+ Agregar otro punto</button>
+        </div>
+        <button class="btn-action" style="width: 100%; margin-top: 10px; font-size: 16px; padding: 12px;" onclick="generarConvocatoriaChatGPT()">🤖 Generar en ChatGPT</button>
+    </div>
+
+    <div id="sub-directiva" style="display:none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 15px;" oninput="guardarDirectivaActual()">
+        <h3 id="dir-titulo" style="color: var(--primary); text-align: center; text-transform: uppercase; margin-bottom: 15px;"></h3>
+        <div style="margin-bottom: 15px;"><label style="font-weight: bold; color: var(--primary);">Curso y Paralelo:</label><input type="text" id="dir-curso-paralelo" placeholder="Ej: 9no EGB 'B'" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></div>
+        <div style="background: #fdf2f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <h4 style="margin-top:0; color: var(--secondary);">Integrantes de la Directiva</h4>
+            <div style="display: grid; grid-template-columns: 1fr; gap: 10px;">
+                <div><label>Presidente/a:</label><input type="text" id="dir-presi" class="input-field" style="width: 100%;"></div>
+                <div><label>Vicepresidente/a:</label><input type="text" id="dir-vice" class="input-field" style="width: 100%;"></div>
+                <div><label>Secretario/a:</label><input type="text" id="dir-sec" class="input-field" style="width: 100%;"></div>
+                <div><label>Tesorero/a:</label><input type="text" id="dir-teso" class="input-field" style="width: 100%;"></div>
+            </div>
+        </div>
+        <div style="margin-bottom: 20px;">
+            <h4 style="color: var(--primary); border-bottom: 2px solid var(--primary); padding-bottom: 5px;">Comisiones</h4>
+            <div id="lista-comisiones"></div>
+            <button class="btn-info" onclick="agregarBloqueComision()" style="width: 100%; margin-top: 10px; font-size: 14px;">+ Agregar Nueva Comisión</button>
+        </div>
+        <button class="btn-success" style="width: 100%; padding: 15px; font-size: 18px; font-weight: bold; box-shadow: 0 4px 6px rgba(0,0,0,0.2);" onclick="imprimirDirectivaPDF()">📥 DESCARGAR DIRECTIVA EN PDF</button>
+    </div>
+
+    <div id="sub-atencion" style="display:none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 15px;">
+        <h3 style="color: var(--primary); text-align: center; margin-bottom: 15px;">Registros de Atención</h3>
+        <div style="display: flex; gap: 10px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
+            <button class="btn-action" style="background-color: var(--success);" onclick="abrirModuloAtencion('refuerzo')">📚 REFUERZO ACADÉMICO</button>
+            <button class="btn-action" style="background-color: var(--success);" onclick="abrirModuloAtencion('representantes')">🤝 ATENCIÓN A REPRESENTANTES</button>
+        </div>
+        <div id="atencion-refuerzo" style="display:none; background: #f9f9f9; padding: 15px; border-radius: 8px;">
+            <h4 style="color: var(--secondary); text-align: center; margin-top: 0;">Registro de Refuerzo Académico</h4>
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Curso:</label><select id="ref-curso" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="actualizarListasAtencion('refuerzo')"><option value="">-- Seleccione un Curso --</option></select>
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Estudiante:</label><input type="text" id="ref-estudiante" list="list-estudiantes-ref" placeholder="Buscar estudiante..." style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"><datalist id="list-estudiantes-ref"></datalist>
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Tema a reforzar:</label><select id="ref-tema" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"><option value="">-- Seleccione un Tema --</option></select>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;"><label style="font-weight: bold; font-size: 13px; color: var(--primary);">Fecha:</label><input type="date" id="ref-fecha" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></div>
+                <div style="flex: 1;"><label style="font-weight: bold; font-size: 13px; color: var(--primary);">Hora:</label><input type="time" id="ref-hora" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-success" style="flex: 1; padding: 12px; font-size: 15px;" onclick="guardarAtencion('refuerzo')">💾 Guardar Registro</button>
+                <button class="btn-info" style="flex: 1; padding: 12px; font-size: 15px; background-color: var(--secondary);" onclick="imprimirAtencion('refuerzo')">🖨️ Imprimir PDF</button>
+            </div>
+            <h4 style="margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: var(--primary);">Historial de Refuerzos</h4>
+            <div id="historial-refuerzo-container" style="max-height: 200px; overflow-y: auto; font-size: 13px; background: white; padding: 10px; border-radius: 5px; border: 1px solid #eee;"></div>
+        </div>
+        <div id="atencion-representantes" style="display:none; background: #fdf2f4; padding: 15px; border-radius: 8px;">
+            <h4 style="color: var(--secondary); text-align: center; margin-top: 0;">Atención a Representantes</h4>
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Motivo de la atención (Obligatorio):</label><input type="text" id="rep-motivo" placeholder="Ej: Rendimiento académico..." style="width: 100%; margin-bottom: 10px; padding: 8px; border: 2px solid var(--secondary); border-radius: 4px;">
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Nombre del Representante:</label><input type="text" id="rep-nombre" placeholder="Escriba el nombre completo..." style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Curso del Estudiante (Opcional):</label><select id="rep-curso" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="actualizarListasAtencion('representantes')"><option value="">-- Seleccione un Curso --</option></select>
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Tema relacionado (Opcional):</label><select id="rep-tema" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"><option value="">-- Seleccione un Tema --</option></select>
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 1;"><label style="font-weight: bold; font-size: 13px; color: var(--primary);">Fecha:</label><input type="date" id="rep-fecha" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></div>
+                <div style="flex: 1;"><label style="font-weight: bold; font-size: 13px; color: var(--primary);">Hora:</label><input type="time" id="rep-hora" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;"></div>
+            </div>
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button class="btn-success" style="flex: 1; padding: 12px; font-size: 15px; background-color: var(--success);" onclick="guardarAtencion('representante')">💾 Guardar Registro</button>
+                <button class="btn-info" style="flex: 1; padding: 12px; font-size: 15px; background-color: var(--secondary);" onclick="imprimirAtencion('representante')">🖨️ Imprimir PDF</button>
+            </div>
+            <h4 style="margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: var(--primary);">Historial de Atenciones</h4>
+            <div id="historial-representantes-container" style="max-height: 200px; overflow-y: auto; font-size: 13px; background: white; padding: 10px; border-radius: 5px; border: 1px solid #eee;"></div>
+        </div>
+    </div>
+
+    <div id="sub-cobros" style="display:none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 15px;">
+        <h3 style="color: var(--primary); text-align: center; margin-bottom: 15px;">💰 Registro de Cobros</h3>
+        
+        <button class="btn-info" onclick="iniciarNuevoCobro()" style="width: 100%; margin-bottom: 15px; font-size: 14px;">+ Agregar Nuevo Cobro</button>
+        
+        <div id="cobros-form" style="background: #fdf2f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+            <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Motivo de cobro:</label>
+            <input type="text" id="cobro-motivo" placeholder="Ej: Excursión, Cuota de fin de año..." style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+            
+            <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div style="flex: 2;">
+                    <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Curso:</label>
+                    <select id="cobro-curso" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                        <option value="">-- Seleccione --</option>
+                    </select>
+                </div>
+                <div style="flex: 1;">
+                    <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Cantidad ($):</label>
+                    <input type="number" id="cobro-cantidad" step="0.01" placeholder="0.00" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+                </div>
+            </div>
+            
+            <button class="btn-action" style="width: 100%; padding: 12px;" onclick="generarTablaCobros()">Generar Tabla de Registro</button>
+        </div>
+
+        <div id="cobros-tabla-container" style="display: none; margin-bottom: 20px;">
+            <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+                <table style="width: 100%; border-collapse: collapse;">
+                    <thead style="position: sticky; top: 0; z-index: 1;">
+                        <tr style="background-color: var(--primary); color: white;">
+                            <th style="padding: 10px; text-align: left;">Estudiante</th>
+                            <th style="padding: 10px; width: 100px; text-align: center;">Abono ($)</th>
+                        </tr>
+                    </thead>
+                    <tbody id="cobros-tbody"></tbody>
+                </table>
+            </div>
+            
+            <div id="cobros-total" style="text-align: right; margin-top: 10px; font-weight: bold; font-size: 16px; color: var(--primary);">Total Recaudado: $0.00</div>
+            
+            <div style="display: flex; gap: 10px; margin-top: 15px;">
+                <button class="btn-success" style="flex: 1; padding: 12px;" onclick="guardarRegistroDefinitivoCobro()">💾 Guardar Registro</button>
+                <button class="btn-info" style="flex: 1; padding: 12px; background-color: var(--secondary);" onclick="descargarCobroPDF()">🖨️ Descargar PDF</button>
+            </div>
+        </div>
+
+        <h4 style="margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: var(--primary);">Registros Guardados</h4>
+        <div id="historial-cobros-botones" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;"></div>
+    </div>
+</div>
 
     <div id="documentationView" class="tab-content">
         <div class="course-buttons" style="justify-content: center; margin-bottom: 10px;">
-            <button class="course-btn" id="btnDocEjemplos" onclick="switchDocTab('ejemplosView', this)">EJEMPLOS</button>
+            <button class="course-btn active" id="btnDocEjemplos" onclick="switchDocTab('ejemplosView', this)">CLASES</button>
             <button class="course-btn" id="btnDocPlanificacion" onclick="switchDocTab('planificacionView', this)">PLANIFICACIÓN</button>
         </div>
         <div class="course-buttons" style="justify-content: center; margin-bottom: 20px;">
-            <button class="course-btn active" id="btnDocReuniones" onclick="switchDocTab('reunionesView', this)">REUNIONES</button>
+            <button class="course-btn" id="btnDocReuniones" onclick="switchDocTab('reunionesView', this)">REUNIONES</button>
             <button class="course-btn" id="btnDocArea" onclick="switchDocTab('areaView', this)">ÁREA</button>
             <button class="course-btn" id="btnDocAlertas" onclick="switchDocTab('alertasView', this)">ALERTAS</button>
         </div>
         
-        <div id="reunionesView">
+        <div id="reunionesView" style="display: none;">
             <div class="task-form">
                 <h4 style="margin-top:0; color: var(--primary);">📝 Generar Informe de Reunión</h4>
                 
@@ -596,9 +809,9 @@
             </div>
         </div>
         
-        <div id="ejemplosView" style="display: none;">
+        <div id="ejemplosView" style="display: block;">
             <div class="task-form">
-                <h4 style="margin-top:0; color: var(--primary);">Selecciona el Curso para Ejemplos</h4>
+                <h4 style="margin-top:0; color: var(--primary);">Selecciona el Curso para Recursos</h4>
                 <div id="ejemplosCourseButtons" class="course-buttons"></div>
 
                 <div id="ejemplosManager" style="display:none; margin-top: 15px;">
@@ -612,8 +825,8 @@
                     <textarea id="ejemplosInfoAdicional" placeholder="Ej: Que sean ejemplos prácticos para niños de 10 años...
 Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; height: 60px; margin-bottom: 10px; resize: vertical;"></textarea>
                     
-                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarEjemplosPerplexity()">Generar Ejemplos con AI</button> </br></br>
-                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarEjemplosPerplexityt()">Generar Teoría con AI</button>
+                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #8E3A2D; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarEjemplosPerplexity()">Generar Ejemplos con AI</button>
+                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #1B4D3E; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarEjemplosPerplexityt()">Generar Teoría con AI</button>
                 </div>
  <div id="examenesManager" style="display:none; margin-top: 15px;">
                     <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Ejemplo de Exámenes</h4>
@@ -655,7 +868,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
                     <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Análisis de Alertas</h4>
                     <p style="font-weight: bold; margin-bottom: 10px;">Curso: <span id="alertasCourseLabel" style="color: var(--primary);"></span></p>
                     <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px;" onclick="enviarAlertasPerplexity()">Revisión con AI</button>
-                    <button style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #f39c12; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarAsistenciaPerplexity()">Revisión de Asistencia con AI</button>
+                    <button style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #f39c12; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="window.revisarAsistenciaConIAMeses()">Revisión de Asistencia con AI</button>
                 </div>
             </div>
         </div>
@@ -764,12 +977,16 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         }, 300);
     });
 
-    // SISTEMA DE PESTAÑAS PRINCIPAL
+   // SISTEMA DE PESTAÑAS PRINCIPAL
     function switchTab(tabId) {
         document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
         document.querySelectorAll('.tabs .tab-btn, .container > div > .tab-btn').forEach(el => el.classList.remove('active'));
         
-        document.getElementById(tabId).classList.add('active');
+        // --- AQUÍ ESTÁ LA SOLUCIÓN ---
+        let vistaActiva = document.getElementById(tabId);
+        vistaActiva.classList.add('active');
+        vistaActiva.style.display = ''; // <-- Esta línea destruye el "display: none" manual para dejar actuar a la clase 'active'
+        // ------------------------------
         
         const activeBtns = Array.from(document.querySelectorAll('.tab-btn')).filter(b => b.getAttribute('onclick').includes(tabId));
         activeBtns.forEach(btn => btn.classList.add('active'));
@@ -784,13 +1001,24 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
             else renderList(currentCourseListIndex);
         }
 
-        if(tabId === 'missingTasks') {
-            if (!currentCourseTaskName) {
-                document.getElementById('taskManager').style.display = 'none';
-                document.getElementById('taskCountView').style.display = 'none';
-                document.getElementById('allTasksView').style.display = 'block';
-                renderAllPendingTasks();
-            }
+       if(tabId === 'missingTasks') {
+            // Le damos un respiro de 100ms al sistema para que termine de cargar los botones de los cursos
+            setTimeout(() => {
+                // Buscamos específicamente el botón que dice "Ver Todo" dentro del contenedor de tareas
+                const botones = document.querySelectorAll('#courseButtonsTasks button');
+                const btnVerTodo = Array.from(botones).find(b => b.innerText.includes('Ver Todo'));
+                
+                // Si no hay un curso seleccionado actualmente, hacemos el "clic fantasma" [7]
+                if (!currentCourseTaskName && btnVerTodo) {
+                    btnVerTodo.click();
+                } else if (!currentCourseTaskName) {
+                    // Respaldo manual si el botón no responde: activamos la vista global directamente [3]
+                    document.getElementById('taskManager').style.display = 'none';
+                    document.getElementById('taskCountView').style.display = 'none';
+                    document.getElementById('allTasksView').style.display = 'block';
+                    renderAllPendingTasks();
+                }
+            }, 100);
         }
 
         if(tabId === 'disciplineView') {
@@ -829,7 +1057,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
             window.open(url, '_blank');
         }
 
-    // PESTAÑAS SECUNDARIAS DE DOCUMENTACIÓN
+    // PESTAÑAS SECUNDARIAS DE GEN
     function switchDocTab(viewId, btnElement) {
         document.getElementById('reunionesView').style.display = 'none';
         document.getElementById('areaView').style.display = 'none';
@@ -889,9 +1117,9 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         
         let dirigidoTexto = dirigido ? `dirigido a ${dirigido}` : '';
 
-        const prompt = `Asume el rol de docente mercedario, hazme un informe profesional de reunión que hubo de la Unidad Educativa Particular "García Moreno" que se hizo la fecha ${fecha}, empezando la reunión a las ${horaInicio}, dirigido a ${dirigidoTexto}, el tema de la reunión fue "${tema}", donde se trataron los siguientes puntos: \n${temasString}\n , terminado la reunión a las ${horaFin}. El resumen de la reunión lo presenta el docente: ${docenteNombre}, ordenalos así: primero la institución, salto de línea, Para: a quien va dirigido, salto de línea, De: nombre del docente que presenta el resumen, salto de línea, haz un una saludo formar con el nombre del docente que presenta la , el que está en la firma de docente, y presente los temas, redacta profesionalmete un poquito largo, no tanto, cada tema y explicación, no inventes datos si no los proporciono, al final de todo, deja un salto de línea, di la hora de finalización de la reunión, salto de línea, atentamente, salto de línea, nombre del docente y  debajo la palabra Docente. No escribas nada en negrita`;
+        const prompt = `Asume el rol de docente mercedario, hazme un informe profesional de reunión que hubo de la Unidad Educativa Particular "García Moreno" que se hizo la fecha ${fecha}, empezando la reunión a las ${horaInicio}, dirigido a ${dirigidoTexto}, el tema de la reunión fue "${tema}", donde se trataron los siguientes puntos: \n${temasString}\n , terminado la reunión a las ${horaFin}. El resumen de la reunión lo presenta el docente: ${docenteNombre}, ordenalos así: primero la institución, salto de línea, Para: a quien va dirigido, salto de línea, De: nombre del docente que presenta el resumen, salto de línea, haz un saludo formal con el nombre del docente que presenta (el que está en la firma de docente) y presente los temas, redacta profesionalmete un poquito largo, no tanto, cada tema y explicación, no inventes datos si no los proporciono, al final de todo, deja un salto de línea, di algo breve donde anuncies la hora de finalización de la reunión, salto de línea, atentamente, salto de línea, nombre del docente y  debajo la palabra Docente. No escribas nada en negrita`;
 
-        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+        window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank');
     }
 
     // ==========================================
@@ -1048,7 +1276,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         let todayStr = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
         let teacherName = localStorage.getItem('teacher_name') || '[Nombre del Docente]';
         
-        let prompt = `Asume el rol de docente de la Unidad Educativa Particular "García Moreno". Crea un informe para reunión de área, donde especifiques que hasta la fecha de hoy ${todayStr} se han avanzado en clases los siguientes temas, me haras la siguiente estuctura, primero pondras Jipijapa, y despues de la coma la fecha, el mes en palabra, dejas un salto de linea, en el centro como titulo que diga Informe de Área, dejas un salto de línea, haces un introducción de presentación breve, nombras la materia y orginiza la información en orden con el curso o materia, el tema y el detalle, si no presenta detalles redacta algo positivo sobre eso, y asi con todos, al final deja un salto de línea, Atentamente, salto de línea y nombre del docente, salto de línea, y la palabra Docente. No escribas nada en negrita`;
+        let prompt = `Asume el rol de docente de la Unidad Educativa Particular "García Moreno". Crea un informe para reunión de área, donde especifiques que hasta la fecha de hoy ${todayStr} se han avanzado en clases los siguientes temas, me haras la siguiente estuctura, primero pondras "Jipijapa," y despues de la coma la fecha (el mes en palabra), dejas un salto de linea, en el centro como titulo que diga Informe de Área, dejas un salto de línea, haces un introducción de presentación breve, nombras la materia y orginiza la información en orden con el curso o materia, el tema y el detalle, si no presenta detalles redacta algo positivo sobre eso, y asi con todos, al final deja un salto de línea, Atentamente, salto de línea y nombre del docente, salto de línea, y la palabra Docente. No escribas nada en negrita`;
         if(subject) prompt += ` de la materia ${subject}`;
         prompt += `: `;
         
@@ -1071,7 +1299,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         prompt += courseTexts.join('; y ') + ".";
         prompt += `\n\nFirma: ${teacherName}`;
         
-        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+        window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank');
     };
 
     // ==========================================
@@ -1119,7 +1347,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
      window.enviarEjemplosPerplexityt = function() {
         const tema = document.getElementById('ejemplosTopicSelect').value, info = document.getElementById('ejemplosInfoAdicional').value.trim();
         if (!tema) { alert("Por favor, selecciona un tema."); return; }
-        let prompt = `Asume el rol de docente de una institución educativa. Genera el contenido teórico del siguiente tema: ${tema}, no hables como docente, solo genera la información con un profesional, que esté la información en tercera persona, que tenga sus citas bibliograficas según apa séptima edición, has la estructura que tú consideres y me mostrarás la información así: titulo segun el tema, salto de linea, la información teórica segun la estructura que tu consideres con temas y subtemas definidos y con numeración comenzando siempre con una definición, salto de línea, las referencias bibliográficas.`;
+        let prompt = `Asume el rol de docente de una institución educativa. Genera el contenido teórico del siguiente tema: ${tema}, no hables como docente, solo genera la información, que esté la información en tercera persona, que tenga sus citas bibliograficas según apa séptima edición, has la estructura que tú consideres y me mostrarás la información así: titulo segun el tema, salto de linea, la información teórica con temas y subtemas con numeración comenzando siempre con una definición y luego los demas subtemas, salto de línea, las referencias bibliográficas.`;
         if (info) prompt += ` te doy una información adicional: ${info}`;
         window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
     };
@@ -1136,6 +1364,111 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
     };
     
+
+    // LÓGICA DE GRUPOS
+
+    function armarGruposConIA() {
+    // 1. Identificar el curso seleccionado
+    // Tu código utiliza variables globales según la pestaña de "Gen" (documentationView) activa.
+    // Intentamos obtener el curso de las variables que ya manejas [1-3].
+    let curso = currentCourseEjemplosName || currentCoursePlanificacionName || currentCourseAlertasName;
+    
+    // Si las variables están vacías, el botón que tenga la clase 'active' que defines en tu CSS [4, 5].
+    if (!curso) {
+        let activeCourseBtn = document.querySelector('.course-btn.active');
+        if (activeCourseBtn) {
+            curso = activeCourseBtn.textContent.trim();
+        }
+    }
+
+    if (!curso) {
+        alert("Por favor, selecciona un curso primero en la sección de Ejemplos, Planificación o Alertas.");
+        return;
+    }
+
+    // 2. Obtener el listado de estudiantes
+    // En tu código, los datos ya están cargados en la variable global 'studentsData' [6, 7].
+    let listadoCurso = studentsData[curso];
+
+    if (!listadoCurso || listadoCurso.length === 0) {
+        alert("No se encontraron estudiantes en el listado para el curso: " + curso + 
+              "\nAsegúrate de haber subido el archivo en el Paso 1B.");
+        return;
+    }
+
+    // 3. Unir el listado en texto
+    let textoListado = listadoCurso.join("\n");
+
+    // 4. Obtener la información adicional
+    // En tu sección 'Gen', usas 'ejemplosInfoAdicional' [8] o 'planificacionDetalle' [9].
+    let inputAdicional = document.getElementById('ejemplosInfoAdicional') || 
+                         document.getElementById('planificacionDetalle');
+    let informacionAdicional = inputAdicional ? inputAdicional.value.trim() : "";
+
+    // 5. Armar el prompt exacto
+    let promptText = `Arma grupos al azar con el siguiente listado, no repitas ningún estudiante en otro grupo:\n\n${textoListado}\n\n`;
+    
+    if (informacionAdicional !== "") {
+        promptText += `Instrucciones adicionales: ${informacionAdicional}`;
+    }
+
+    // 6. Enviar a ChatGPT
+    // Nota: Aunque tu código usa Perplexity [10-12], aquí se mantiene ChatGPT según solicitaste.
+    let chatGptUrl = `https://chatgpt.com/?q=${encodeURIComponent(promptText)}`;
+    window.open(chatGptUrl, '_blank');
+}
+
+
+//RUBRICA IA
+
+
+function generarRubricaConIA() {
+    // 1. Obtener el tema seleccionado
+    // REEMPLAZA ESTO: pon el ID exacto de tu lista desplegable o input de temas
+    let selectTema = document.getElementById('ejemplosTopicSelect'); 
+    let tema = "";
+
+    if (selectTema) {
+        // Obtenemos el texto de la opción seleccionada
+        if (selectTema.options && selectTema.selectedIndex >= 0) {
+            tema = selectTema.options[selectTema.selectedIndex].text.trim();
+        } else {
+            // Por si es un input en vez de un select
+            tema = selectTema.value.trim(); 
+        }
+    }
+
+    // Si no encuentra el ID, te pide el tema manualmente
+    if (!tema) {
+        tema = prompt("No se detectó el tema. Por favor, escribe el tema para la rúbrica:");
+        if (!tema) return; // Si cancelas, se detiene
+    }
+
+    // 2. Obtener la información adicional de la caja de texto
+    // detalle opcional
+    let inputAdicional = document.getElementById('ejemplosInfoAdicional');
+    let informacionAdicional = inputAdicional ? inputAdicional.value.trim() : "";
+
+    // 3. Prompt exacto
+    let promptText = `Hazme una rubrica de calificacion sobre el siguiente tema: ${tema}, muestralo en una tabla de de 7 columnas y 6 filas, en la primera fila que esten los encabezados: criterio, 2pts, 1.5pt, 1pt, 0.5pt, 0pt, calificacion obtenida. \n\n`;
+    
+    if (informacionAdicional !== "") {
+        promptText += `hazlo con los siguientes criterios: ${informacionAdicional}, si no hay 5 criterios completa los 5, si hay más de 5, optimazlos a 5. Muestrame debajo del encabezado los 5 criterios y en la ultima fila el total para calificar`;
+    } else {
+        // Si la caja está vacía
+        promptText += `Define tú los criterios 5 criterios más adecuados para este tema, Muestrame debajo del encabezado los 5 criterios y en la ultima fila el total para calificar.`;
+    }
+
+    // 4. Redirigir a Gemini con el prompt pre-cargado
+    let chatGptUrl = `https://chatgpt.com/?q=${encodeURIComponent(promptText)}`;
+    window.open(chatGptUrl, '_blank');
+}
+
+
+
+
+
+
     // ==========================================
     // LÓGICA DE PLANIFICACIÓN
     // ==========================================
@@ -1185,15 +1518,15 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
 * 4 Destrezas con criterios de desempeño
 * 3 Indicadores de evaluación
 * Estrategias metodológicas activas con metodología ACC, divididas en:
-  Anticipación (de 2 a 3 viñetas)
-  Comprensión (de 4 a 5 viñetas)
-  Consolidación (de 2 a 3 viñetas)
+  Anticipación (de 2 a 3, en viñetas)
+  Comprensión (de 4 a 5, en viñetas)
+  Consolidación (de 2 a 3, en viñetas)
 Pero si te pido con Estrategias metodológicas ERCA, haras:
-Experiencia (de 2 a 3 viñetas)
-Reflexión (de 2 a 3 viñetas)
-Conceptualización (de 4 a 5 viñetas)
-Aplicación (3 viñetas)
-* Técnica e Instrumento
+Experiencia (de 2 a 3, en viñetas)
+Reflexión (de 2 a 3, en viñetas)
+Conceptualización (de 4 a 5, en viñetas)
+Aplicación (3, en viñetas)
+* Técnicas, en viñetas. e Instrumentos, en viñetas
 
 Condiciones obligatorias:
 
@@ -2527,7 +2860,7 @@ function inicializarAsistenciaAutomaticamente() {
             code = `${init}-001`; 
         }
 
-        const msg = `*${code}*\n\nEstimado(a) Tutor(a) y Representante Legal:\nPor medio de la presente, me permito informar que, en la fecha *${task.date}*, el/la estudiante *${task.student}* no presentó la tarea asignada correspondiente al tema *${task.topic || 'Sin tema específico'}*, por el siguiente motivo: *${task.status || 'No presentó'}*.\n\nAgradezco su apoyo en el seguimiento de este caso.`;
+        const msg = `*${code}*\n\nEstimado(a) Tutor(a) y Representante Legal:\nPor medio de la presente, me permito informar que, en la fecha *${task.date}*, el/la estudiante *${task.student}* tiene pendiente la tarea asignada correspondiente al tema *${task.topic || 'Sin tema específico'}*, por el siguiente motivo: *${task.status || 'No presentó'}*.\n\nAgradezco su apoyo en el seguimiento de este caso.`;
         
         window.open(`https://wa.me/${phone}?text=${encodeURIComponent(msg)}`, '_blank');
     };
@@ -3240,10 +3573,27 @@ function exportarAsistenciaMes() {
     document.body.innerHTML = htmlTabla;
 }
 
-// EXPORTAR A PDF
+// EXPORTAR A PDF (MÉTODO BLOB CLÁSICO MEJORADO)
 function exportarAsistenciaMesPDF() {
     let curso = window.cursoActualAsistencia;
     if (!curso) return;
+
+    // --- HERRAMIENTA 1: Limpiador de textos ---
+    const limpiarTexto = (texto) => {
+        if (!texto) return "";
+        return texto; // Mantiene tildes y ñ
+    };
+
+    // --- HERRAMIENTA 2: Convertir número de mes a palabra ---
+    const obtenerNombreMes = (numeroMes) => {
+        const meses = [
+            "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", 
+            "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+        ];
+        let indice = parseInt(numeroMes, 10) - 1;
+        if (isNaN(indice) || indice < 0 || indice > 11) return numeroMes;
+        return meses[indice];
+    };
 
     let fechaBase = window.fechaActualAsistencia || new Date().toLocaleDateString('es-EC');
     let partesFecha = fechaBase.split('/'); 
@@ -3272,16 +3622,22 @@ function exportarAsistenciaMesPDF() {
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF('landscape'); 
 
+    doc.setFont("helvetica");
+
+    let cursoLimpio = limpiarTexto(curso);
+
     doc.setFontSize(16);
-    doc.text(`Registro de Asistencia - ${curso}`, 14, 15);
+    doc.text(`Registro de Asistencia - ${cursoLimpio}`, 14, 15);
     doc.setFontSize(11);
-    doc.text(`Mes: ${mesActual} / Año: ${anioActual}`, 14, 22);
+
+    // --- CAMBIO 1: Aquí usamos obtenerNombreMes y recuperamos la "ñ" de Año ---
+    doc.text(`Mes: ${obtenerNombreMes(mesActual)} / Año: ${anioActual}`, 14, 22);
 
     let encabezados = [['Estudiante', ...fechasDelMes.map(f => f.split('/')[0])]]; 
     let datosPdf = [];
 
     estudiantes.forEach(est => {
-        let fila = [est];
+        let fila = [limpiarTexto(est)];
         fechasDelMes.forEach(fecha => {
             let estado = datosCurso[fecha][est];
             if (estado === 1) fila.push('A'); 
@@ -3296,134 +3652,1346 @@ function exportarAsistenciaMesPDF() {
         head: encabezados,
         body: datosPdf,
         startY: 28,
-        styles: { fontSize: 8, cellPadding: 2, halign: 'center' },
+        styles: { font: "helvetica", fontSize: 8, cellPadding: 2, halign: 'center' },
         columnStyles: { 0: { halign: 'left', cellWidth: 50 } }, 
         headStyles: { fillColor: [107, 33, 51] } 
     });
 
-    // === EL TRUCO MAESTRO: API NATIVA DE ANDROID ===
-    let nombreArchivo = `Asistencia_${curso}_Mes_${mesActual}_${anioActual}.pdf`;
-    let blobPDF = doc.output('blob'); // Lo convertimos en un archivo real, no en texto
-    
-    // Verificamos si el celular soporta abrir el menú nativo de compartir
-    let archivo = new File([blobPDF], nombreArchivo, { type: 'application/pdf' });
-    
-    if (navigator.canShare && navigator.canShare({ files: [archivo] })) {
-        // Abre la bandeja de abajo de Android
-        navigator.share({
-            files: [archivo],
-            title: nombreArchivo,
-            text: `Registro de asistencia de ${curso} generado desde la App.`
-        }).catch((err) => {
-            console.log('El usuario cerró el menú', err);
-            // Si algo falla, usamos FileSaver como respaldo
-            window.saveAs(blobPDF, nombreArchivo);
-        });
-    } else {
-        // Si el celular es muy antiguo, fuerza la descarga directa
-        window.saveAs(blobPDF, nombreArchivo);
-    }
+    // --- CAMBIO 2: El nombre del archivo ahora también dirá el mes en palabras ---
+    let nombreMesPalabra = obtenerNombreMes(mesActual);
+    let nombreArchivo = `Asistencia_${cursoLimpio}_${nombreMesPalabra}_${anioActual}.pdf`;
+    nombreArchivo = nombreArchivo.replace(/ /g, "_");
+
+    // --- CAMBIO 3: El método de salida para Android Studio ---
+    const pdfDataUri = doc.output('datauristring');
+    const link = document.createElement('a');
+    link.href = pdfDataUri;
+    link.download = nombreArchivo; 
+    link.click();
 }
 
 </script>
 
 <script>
-    // 1. FUNCIÓN QUE ABRE EL PANEL
-    window.renderAlertasPanel = function(courseName) {
-        window.currentCourseAlertasName = courseName;
-        var panel = document.getElementById('alertasManager');
-        var label = document.getElementById('alertasCourseLabel');
+
+// Función universal para forzar apertura en navegador externo del celular respetando el navegador por defecto
+function abrirEnlaceExterno(url) {
+    const a = document.createElement('a');
+    a.href = url;
+    a.target = '_blank';
+    a.rel = 'noopener noreferrer'; // Protocolo de seguridad que exige Android
+    document.body.appendChild(a);
+    a.click(); // Clic automático
+    document.body.removeChild(a); // Borramos el rastro
+}
+
+// 1. FUNCIÓN QUE ABRE EL PANEL Y CREA LAS CASILLAS DE MESES
+window.renderAlertasPanel = function(courseName) {
+    window.currentCourseAlertasName = courseName;
+    var panel = document.getElementById('alertasManager');
+    var label = document.getElementById('alertasCourseLabel');
+    
+    if(panel) panel.style.display = 'block';
+    if(label) label.innerText = courseName;
+
+    // Crear la sección de los 12 meses (si aún no existe en pantalla)
+    let mesesDiv = document.getElementById('filtro-meses-alertas');
+    if (!mesesDiv && panel) {
+        mesesDiv = document.createElement('div');
+        mesesDiv.id = 'filtro-meses-alertas';
+        mesesDiv.style.margin = '15px 0';
+        mesesDiv.style.padding = '12px';
+        mesesDiv.style.border = '1px dashed #6b2133';
+        mesesDiv.style.borderRadius = '8px';
+        mesesDiv.style.backgroundColor = '#fdfbf7';
         
-        if(panel) panel.style.display = 'block';
-        if(label) label.innerText = courseName;
-    };
-
-    // 2. FUNCIÓN DE IA PARA TAREAS Y DISCIPLINA
-    window.enviarAlertasPerplexity = function() {
-        let course = window.currentCourseAlertasName;
-        if (!course) { alert("Error: Selecciona un curso primero."); return; }
-
-        let tareasGuardadas = JSON.parse(localStorage.getItem('tareas_pendientes')) || {};
-        let disciplinaGuardada = JSON.parse(localStorage.getItem('reportes_disciplina')) || {};
-
-        let tareas = tareasGuardadas[course] ? tareasGuardadas[course].filter(t => !t.hecha) : [];
-        let reportes = disciplinaGuardada[course] ? disciplinaGuardada[course] : [];
-
-        let prompt = `Soy docente de un institución educativa. Hazme un análisis de caso de alerta de lo siguiente, del curso o materia: ${course}:\n\n`;
+        let htmlMeses = '<label style="font-weight:bold; color:var(--primary); display:block; margin-bottom:8px;">📅 Selecciona los meses a analizar (Opcional):</label>';
+        htmlMeses += '<div style="display: flex; flex-wrap: wrap; gap: 10px;">';
+        const nombresMeses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
         
-        if (tareas.length === 0 && reportes.length === 0) {
-            prompt += "Actualmente no hay estudiantes con tareas pendientes ni reportes de disciplina. Escribe un breve mensaje de felicitación para el curso.";
+        // Creamos los 12 checkboxes (Valores del "01" al "12")
+        for(let i=0; i<12; i++) {
+            let mesNum = (i+1).toString().padStart(2, '0');
+            htmlMeses += `<label style="font-size: 13px; cursor:pointer; background: #eee; padding: 4px 8px; border-radius: 4px; display: flex; align-items: center; gap: 4px;"><input type="checkbox" class="chk-mes-alerta" value="${mesNum}"> ${nombresMeses[i]}</label>`;
+        }
+        htmlMeses += '</div>';
+        htmlMeses += '<small style="color:#666; display:block; margin-top:8px;">* Si no marcas ningún mes, la IA analizará el historial completo.</small>';
+        mesesDiv.innerHTML = htmlMeses;
+
+        // Inyectarlo justo encima del primer botón de "Revisión con AI"
+        let btnAI = panel.querySelector('button[onclick="enviarAlertasPerplexity()"]');
+        if(btnAI) {
+            btnAI.parentNode.insertBefore(mesesDiv, btnAI);
         } else {
-            if (tareas.length > 0) {
-                prompt += "TAREAS PENDIENTES:\n";
-                tareas.forEach(t => prompt += `- ${t.student}: ${t.task}\n`);
-            }
-            if (reportes.length > 0) {
-                prompt += "\nREPORTES DE DISCIPLINA:\n";
-                reportes.forEach(r => prompt += `- ${r.student}: ${r.desc}\n`);
-            }
-            prompt += "\nGenera un resumen ejecutivo primero hazlo por cada estudiante, presentamelos en esta estructura: 1. Análisis del desempeño académico: Identificar frecuencia, Detectar patrones en relacion a los temas. 2. Análisis del comportamiento disciplinario. 3. Conclusión del análisis, en un parrafo. 4. Sugerencia de intervención.";
+            panel.appendChild(mesesDiv);
         }
-        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
-    };
+    }
+};
 
-    // 3. NUEVA FUNCIÓN DE IA PARA ASISTENCIAS
-    window.enviarAsistenciaPerplexity = function() {
-        let course = window.currentCourseAlertasName;
-        if (!course) { alert("Error: Selecciona un curso primero."); return; }
+// 2. FUNCIÓN DE IA PARA TAREAS Y DISCIPLINA (AHORA FILTRA POR MES)
+window.enviarAlertasPerplexity = function() {
+    let course = window.currentCourseAlertasName;
+    if (!course) { alert("Error: Selecciona un curso primero."); return; }
 
-        let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
-        let datosCurso = historialGlobal[course] || {};
-        let todosLosEstudiantes = JSON.parse(localStorage.getItem('students_data')) || {};
-        let estudiantes = todosLosEstudiantes[course] || [];
-        
-        let fechas = Object.keys(datosCurso);
-        if (fechas.length === 0 || estudiantes.length === 0) {
-            alert("No hay registros de asistencia para este curso aún.");
-            return;
+    let tareasGuardadas = JSON.parse(localStorage.getItem('tareas_pendientes')) || {};
+    let disciplinaGuardada = JSON.parse(localStorage.getItem('reportes_disciplina')) || {};
+
+    let tareas = tareasGuardadas[course] ? tareasGuardadas[course].filter(t => !t.hecha) : [];
+    let reportes = disciplinaGuardada[course] ? disciplinaGuardada[course] : [];
+
+    let checkboxes = document.querySelectorAll('.chk-mes-alerta:checked');
+    let mesesSeleccionados = Array.from(checkboxes).map(cb => parseInt(cb.value, 10));
+
+    if (mesesSeleccionados.length > 0) {
+        const extraerMes = (fechaStr) => {
+            if (!fechaStr) return -1;
+            let partes = fechaStr.includes('-') ? fechaStr.split('-') : fechaStr.split('/');
+            return partes.length >= 2 ? parseInt(partes[1], 10) : -1;
+        };
+
+        tareas = tareas.filter(t => mesesSeleccionados.includes(extraerMes(t.date)));
+        reportes = reportes.filter(r => mesesSeleccionados.includes(extraerMes(r.date)));
+    }
+
+    let prompt = `Actúa como asesor pedagógico. Revisa las siguientes alertas de estudiantes del curso ${course}`;
+    
+    const nombresDeMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    if (mesesSeleccionados.length > 0) {
+        let nombresSeleccionados = mesesSeleccionados.map(m => nombresDeMeses[m - 1]);
+        prompt += ` (Filtrado para los meses: ${nombresSeleccionados.join(', ')})`;
+    }
+    prompt += `:\n\n`;
+    
+    if (tareas.length === 0 && reportes.length === 0) {
+        prompt += "En el periodo seleccionado no hay estudiantes con tareas pendientes ni reportes de disciplina. Escribe un breve mensaje de felicitación para el curso.";
+    } else {
+        if (tareas.length > 0) {
+            prompt += "TAREAS PENDIENTES:\n";
+            tareas.forEach(t => prompt += `- ${t.student}: ${t.task} (${t.date})\n`);
         }
+        if (reportes.length > 0) {
+            prompt += "\nREPORTES DE DISCIPLINA:\n";
+            reportes.forEach(r => prompt += `- ${r.student}: ${r.desc} (${r.date})\n`);
+        }
+        prompt += "\nGenera un resumen para el tutor del curso redactalo como texto aquí, señalando a los estudiantes con más novedades, haz el análisis general, y luego el perfil de cada caso identificando en un párrafo: patrones segun el tema, aparte la frecuencia si existe una, y aparte sugerencia de 2 estrategias de intervención efectivas en viñetas.";
+    }
+    
+    // --- NUEVO FINAL PARA ABRIR CLAUDE EN NAVEGADOR POR DEFECTO ---
+    const urlOriginal = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
+    abrirEnlaceExterno(urlOriginal);
+};
 
-        // Calcular asistencias
-        let resumenAsistencia = {};
+// =========================================================================
+// NUEVA FUNCIÓN DE ASISTENCIA CON IA Y FILTRO DE MESES
+// =========================================================================
+window.revisarAsistenciaConIAMeses = function() {
+    let course = window.cursoActualAsistencia || window.currentCourseAlertasName;
+    if (!course) { alert("Error: Selecciona un curso primero."); return; }
+
+    let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    let datosCurso = historialGlobal[course] || {};
+    let todosLosEstudiantes = JSON.parse(localStorage.getItem('students_data')) || {};
+    let estudiantes = todosLosEstudiantes[course] || [];
+    
+    let fechas = Object.keys(datosCurso);
+
+    let checkboxes = document.querySelectorAll('.chk-mes-alerta:checked');
+    let mesesSeleccionados = Array.from(checkboxes).map(cb => parseInt(cb.value, 10));
+
+    if (mesesSeleccionados.length > 0) {
+        const extraerMes = (fechaStr) => {
+            if (!fechaStr) return -1;
+            let partes = fechaStr.includes('-') ? fechaStr.split('-') : fechaStr.split('/');
+            return partes.length >= 2 ? parseInt(partes[1], 10) : -1;
+        };
+        fechas = fechas.filter(f => mesesSeleccionados.includes(extraerMes(f)));
+    }
+
+    if (fechas.length === 0 || estudiantes.length === 0) {
+        alert("No hay registros de asistencia para este curso en los meses seleccionados.");
+        return;
+    }
+
+    let resumenAsistencia = {};
+    estudiantes.forEach(est => {
+        resumenAsistencia[est] = { presentes: 0, faltas: 0, justificadas: 0, total: 0 };
+    });
+
+    fechas.forEach(fecha => {
         estudiantes.forEach(est => {
-            resumenAsistencia[est] = { presentes: 0, faltas: 0, justificadas: 0, total: 0 };
+            let estado = datosCurso[fecha][est];
+            if (estado === 1 || estado === 2 || estado === 3) {
+                resumenAsistencia[est].total++;
+                if (estado === 1) resumenAsistencia[est].presentes++;
+                if (estado === 2) resumenAsistencia[est].faltas++;
+                if (estado === 3) resumenAsistencia[est].justificadas++;
+            }
         });
+    });
 
-        fechas.forEach(fecha => {
-            estudiantes.forEach(est => {
-                let estado = datosCurso[fecha][est];
-                // 1=Presente, 2=Falta, 3=Justificada
-                if (estado === 1 || estado === 2 || estado === 3) {
-                    resumenAsistencia[est].total++;
-                    if (estado === 1) resumenAsistencia[est].presentes++;
-                    if (estado === 2) resumenAsistencia[est].faltas++;
-                    if (estado === 3) resumenAsistencia[est].justificadas++;
+    let prompt = `Actúa como asesor pedagógico. Revisa el reporte de asistencia histórica del curso ${course}`;
+    
+    const nombresDeMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
+    if (mesesSeleccionados.length > 0) {
+        let nombresSeleccionados = mesesSeleccionados.map(m => nombresDeMeses[m - 1]);
+        prompt += ` (Filtrado para los meses: ${nombresSeleccionados.join(', ')})`;
+    }
+    prompt += `:\n\n`;
+
+    let hayDatos = false;
+
+    estudiantes.forEach(est => {
+        let datos = resumenAsistencia[est];
+        if (datos.total > 0) {
+            hayDatos = true;
+            let porcentaje = Math.round(((datos.presentes + datos.justificadas) / datos.total) * 100);
+            prompt += `- ${est}: ${porcentaje}% de asistencia (${datos.faltas} faltas y ${datos.justificadas} faltas justificadas, en un total de ${datos.total} clases).\n`;
+        }
+    });
+
+    if (!hayDatos) {
+        alert("Aunque hay fechas creadas en este periodo, aún no se ha marcado la asistencia de ningún estudiante.");
+        return;
+    }
+
+    prompt += "\nGenera un resumen para el tutor del curso redactado en texto aquí. Señala a los estudiantes que tengan un porcentaje de asistencia preocupante, haz un analisis general, y luego has el perfil de caso para cada estudiante en un párrafo y sugiere 2 estrategias para mejorar el presentismo en el aula, deja saltos de linea por cada estudiante, se puntual con lo dicho y dime al final qué piensas tras el análisis.";
+
+    // --- NUEVO FINAL PARA ABRIR CLAUDE EN NAVEGADOR POR DEFECTO ---
+    const urlOriginal = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
+    abrirEnlaceExterno(urlOriginal);
+};
+
+
+// =========================================================================
+    // SISTEMA DE PROTECCIÓN POR LICENCIA (KEY.CSV)
+    // =========================================================================
+    document.addEventListener("DOMContentLoaded", function() {
+        checkAppLicense();
+        document.getElementById('key-upload').addEventListener('change', handleKeyUpload);
+    });
+
+    function checkAppLicense() {
+        const lockScreen = document.getElementById('app-lock-screen');
+        if (!lockScreen) return; // Por si acaso no cargó el HTML aún
+
+        const storedKey = localStorage.getItem('app_license_data');
+        const lastUpdate = localStorage.getItem('app_license_date'); 
+
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        const isAprilOrLater = now.getMonth() >= 3; // 3 es el mes de Abril (Enero es 0)
+        
+        // Si no hay llave O si estamos en abril (o más) y la llave guardada es de un año anterior
+        if (!storedKey || (isAprilOrLater && (!lastUpdate || lastUpdate < currentYear))) {
+            lockScreen.style.display = 'flex';
+        } else {
+            lockScreen.style.display = 'none';
+        }
+    }
+
+   
+function validarContrasenaMaestra() {
+        const inputPass = document.getElementById('masterPasswordInput').value;
+        const errorMessage = document.getElementById('lock-error');
+
+        if (inputPass === "Byakko09876.") {
+            const now = new Date();
+            localStorage.setItem('app_license_data', 'VALIDATED');
+            localStorage.setItem('app_license_date', now.getFullYear());
+            
+            alert("Acceso concedido correctamente. \nBienvenido.\nDeveloped by: Andrés Fienco.\n© 2026. All rights reserved.");
+            document.getElementById('app-lock-screen').style.display = 'none';
+        } else {
+            if (errorMessage) {
+                errorMessage.style.display = 'block';
+                errorMessage.innerText = "Contraseña incorrecta o archivo inválido.";
+            } else {
+                alert("Contraseña incorrecta.");
+            }
+            document.getElementById('masterPasswordInput').value = ""; 
+        }
+    }
+    // --- FIN DE LA NUEVA FUNCIÓN ---
+ 
+
+// 1. Función para calcular matemáticamente el próximo 1 de abril
+    function getNextAprilFirst() {
+        const now = new Date();
+        const currentYear = now.getFullYear();
+        // En JavaScript, Enero es 0, Febrero es 1, Marzo es 2 y Abril es el 3
+        const thisYearAprilFirst = new Date(currentYear, 3, 1); 
+        
+        if (now >= thisYearAprilFirst) {
+            // Si ya pasamos el 1 de abril de hoy, expira el 1 de abril del próximo año
+            return new Date(currentYear + 1, 3, 1).getTime();
+        } else {
+            // Si aún no estamos en abril, expira el 1 de abril de este mismo año
+            return thisYearAprilFirst.getTime();
+        }
+    }
+
+    // 2. Función para bloquear o dejar entrar al iniciar la app
+    function checkLicense() {
+        const status = localStorage.getItem('app_license_data');
+        const expiry = localStorage.getItem('app_license_expiry');
+        const now = new Date().getTime();
+
+        // Si la licencia es válida Y la fecha de hoy es menor a la fecha del próximo 1 de abril
+        if (status === 'VALIDATED' && expiry && now < parseInt(expiry)) {
+            document.getElementById('app-lock-screen').style.display = 'none'; // Deja entrar
+        } else {
+            // Se bloquea porque no tiene licencia o ya pasó el 1 de abril
+            document.getElementById('app-lock-screen').style.display = 'flex';
+            
+            // Si el bloqueo fue porque ya expiró, reseteamos la memoria
+            if (expiry && now >= parseInt(expiry)) {
+                localStorage.removeItem('app_license_data');
+                localStorage.removeItem('app_license_expiry');
+                alert("La licencia anual ha expirado (Llegó el 1 de Abril). Por favor, ingrese el nuevo KEY de acceso o la contraseña maestra.");
+            }
+        }
+    }
+
+    // 3. Función si suben el archivo .CSV
+    function handleKeyUpload(event) {
+        const file = event.target.files[0];
+        if (!file) return;
+
+        Papa.parse(file, {
+            delimiter: ";", 
+            complete: function(results) {
+                const validData = [
+                    ["andres", "fienco"],
+                    ["612", "valprax"]
+                ];
+
+                const isValid = results.data.length >= 2 &&
+                                results.data[0][0] === validData[0][0] && 
+                                results.data[0][1] === validData[0][1] &&
+                                results.data[1][0] === validData[1][0] &&
+                                results.data[1][1] === validData[1][1];
+
+                if (isValid) {
+                    const expiryTime = getNextAprilFirst(); // Calculamos fecha de caducidad
+                    localStorage.setItem('app_license_data', 'VALIDATED');
+                    localStorage.setItem('app_license_expiry', expiryTime); // Guardamos caducidad exacta
+                    
+                    alert("Licencia validada correctamente.\nEl sistema es válido hasta el próximo 01 de Abril.\n\nDeveloped by: Andrés Fienco.\n© 2026. All rights reserved.");
+                    document.getElementById('app-lock-screen').style.display = 'none';
+                } else {
+                    document.getElementById('lock-error').style.display = 'block';
+                    event.target.value = ""; // Limpiar input para que intente de nuevo
+                }
+            }
+        });
+    }
+
+    // 4. Función si escriben la contraseña "Byakko08."
+    function validarContrasenaMaestra() {
+        const inputPass = document.getElementById('masterPasswordInput').value;
+        const errorMessage = document.getElementById('lock-error');
+
+        if (inputPass === "Byakko08.") {
+            const expiryTime = getNextAprilFirst(); // Calculamos la MISMA fecha de caducidad
+            localStorage.setItem('app_license_data', 'VALIDATED');
+            localStorage.setItem('app_license_expiry', expiryTime); // Guardamos caducidad exacta
+            
+            alert("Acceso maestro concedido.\nEl sistema es válido hasta el próximo 01 de Abril.\n\nDeveloped by: Andrés Fienco.\n© 2026. All rights reserved.");
+            document.getElementById('app-lock-screen').style.display = 'none';
+        } else {
+            if (errorMessage) {
+                errorMessage.style.display = 'block';
+                errorMessage.innerText = "Contraseña incorrecta o archivo inválido.";
+            } else {
+                alert("Contraseña incorrecta.");
+            }
+            document.getElementById('masterPasswordInput').value = ""; 
+        }
+    }
+
+    // Esto permite validar la contraseña presionando "Enter"
+    document.getElementById('masterPasswordInput')?.addEventListener('keypress', function (e) {
+        if (e.key === 'Enter') {
+            validarContrasenaMaestra();
+        }
+    });
+
+    // Se asegura de verificar la caducidad apenas abren el archivo/App
+    document.addEventListener("DOMContentLoaded", function() {
+        checkLicense();
+    });
+
+</script>
+
+<script>
+
+
+// ==========================================
+// LÓGICA COMPLETA DEL PORTAFOLIO DOCENTE
+// ==========================================
+
+// 1. CONTROL DE VISTAS (Navegación del Portafolio)
+// 1. CONTROL DE VISTAS (Navegación del Portafolio)
+function mostrarSubPortafolio(id) {
+    const subs = ['sub-nomina', 'sub-convocatoria', 'sub-atencion', 'sub-directiva', 'sub-cobros']; // <-- Se agregó sub-cobros aquí
+    subs.forEach(s => { 
+        if(document.getElementById(s)) document.getElementById(s).style.display = 'none'; 
+    });
+    if(document.getElementById(id)) document.getElementById(id).style.display = 'block';
+}
+
+// ==========================================
+// FUNCIÓN MAESTRA (¡ESTO CORRIGE LOS CURSOS Y ESTUDIANTES VACÍOS!)
+// ==========================================
+function obtenerCursosYEstudiantes() {
+    // 1. Si tu sistema ya cargó los cursos para Asistencia, los copiamos
+    if (typeof window.baseDeDatosAsistencia !== 'undefined' && Object.keys(window.baseDeDatosAsistencia).length > 0) {
+        return window.baseDeDatosAsistencia;
+    }
+
+    let bd = {};
+    let plan = null;
+    let est = null;
+
+    // 2. Buscar las matrices del CSV directamente en la memoria
+    for (let i = 0; i < localStorage.length; i++) {
+        let val = localStorage.getItem(localStorage.key(i));
+        try {
+            if (val && val.trim().startsWith('[')) {
+                let parsed = JSON.parse(val);
+                if (Array.isArray(parsed) && parsed.length > 0 && Array.isArray(parsed[0])) {
+                    let primeraCelda = String(parsed[0][0] || "").toLowerCase();
+                    if (primeraCelda.includes("fecha")) plan = parsed; // Matriz Planificación
+                    else if (parsed.length > 2) est = parsed; // Matriz Estudiantes
+                }
+            }
+        } catch(e) {}
+    }
+
+    // 3. Emparejar Cursos con sus respectivos Estudiantes
+    if (plan || typeof window.headers !== 'undefined') {
+        let cursosCrudos = plan ? plan[0].slice(1) : window.headers.slice(1);
+        let cursos = cursosCrudos.filter(c => c && c.trim() !== "");
+        
+        cursos.forEach(curso => { bd[curso.trim()] = []; });
+        
+        if (est) {
+            for (let f = 0; f < est.length; f++) {
+                for (let c = 0; c < cursos.length; c++) {
+                    let curso = cursos[c];
+                    let alumno = est[f][c];
+                    // Validar que no esté vacío y no sea el título de la cabecera
+                    if (curso && alumno && String(alumno).trim() !== "" && String(alumno).trim().toLowerCase() !== curso.trim().toLowerCase()) {
+                        bd[curso.trim()].push(String(alumno).trim());
+                    }
+                }
+            }
+        }
+    }
+    
+    if (Object.keys(bd).length === 0) bd = JSON.parse(localStorage.getItem('students_data')) || {};
+    return bd;
+}
+
+// ==========================================
+// 2. LÓGICA DE NÓMINA DE ESTUDIANTES
+// ==========================================
+let cursoNominaSeleccionado = '';
+
+function abrirNomina() {
+    mostrarSubPortafolio('sub-nomina');
+    const container = document.getElementById('nomina-cursos-container');
+    container.innerHTML = '';
+    
+    // USAMOS LA NUEVA FUNCIÓN MAESTRA
+    const dbCursos = obtenerCursosYEstudiantes();
+    const cursos = Object.keys(dbCursos);
+    
+    if(cursos.length === 0) {
+        container.innerHTML = '<p style="color:red; font-weight:bold;">⚠️ No hay cursos registrados. Asegúrate de cargarlos en Configuración.</p>';
+        return;
+    }
+
+    cursos.forEach(curso => {
+        const btn = document.createElement('button');
+        btn.innerText = curso;
+        btn.className = 'btn-action';
+        btn.style.margin = '5px';
+        btn.style.backgroundColor = 'var(--secondary)';
+        btn.onclick = (e) => {
+            cursoNominaSeleccionado = curso;
+            document.getElementById('nomina-curso-seleccionado-titulo').innerText = "Curso: " + curso;
+            document.getElementById('nomina-print-container').style.display = 'block';
+        };
+        container.appendChild(btn);
+    });
+}
+
+function imprimirNominaPDF() {
+    if (!cursoNominaSeleccionado) return;
+    const dbCursos = obtenerCursosYEstudiantes();
+    let estudiantes = dbCursos[cursoNominaSeleccionado] || [];
+    
+    // Limpiamos la lista por si hay duplicados
+    estudiantes = [...new Set(estudiantes)];
+    estudiantes.sort();
+    
+    const nombreDocente = localStorage.getItem('teacher_name') || "Docente de la Institución";
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(`NÓMINA DE ESTUDIANTES`, 105, 15, { align: "center" });
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Unidad Educativa Particular "García Moreno"`, 14, 25);
+    doc.text(`Curso: ${cursoNominaSeleccionado}`, 14, 31);
+    doc.text(`Docente: ${nombreDocente}`, 14, 37);
+    
+    doc.autoTable({
+        head: [['N°', 'Apellidos y Nombres', 'Observaciones']],
+        body: estudiantes.map((nom, i) => [i + 1, nom, ""]),
+        startY: 42,
+        headStyles: { fillColor: [107, 33, 51] }
+    });
+
+    const nombreLimpio = cursoNominaSeleccionado.replace(/ /g, "_");
+    const pdfDataUri = doc.output('datauristring');
+    const link = document.createElement('a');
+    link.href = pdfDataUri;
+    link.download = `Nomina_${nombreLimpio}.pdf`;
+    link.click();
+}
+
+// ==========================================
+// 3. LÓGICA DE CONVOCATORIAS (CHATGPT)
+// ==========================================
+function agregarPunto() {
+    const container = document.getElementById('conv-puntos-container');
+    const div = document.createElement('div');
+    div.className = 'punto-item';
+    div.style.display = 'flex';
+    div.style.gap = '5px';
+    div.style.marginBottom = '8px';
+    div.innerHTML = `
+        <input type="text" class="punto-input" placeholder="Siguiente punto..." style="flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 4px;">
+        <button onclick="eliminarPunto(this)" class="btn-delete" style="width: 40px; padding: 0;">✕</button>
+    `;
+    container.appendChild(div);
+}
+
+function eliminarPunto(btn) {
+    btn.parentElement.remove();
+}
+
+function generarConvocatoriaChatGPT() {
+    const fecha = document.getElementById('conv-fecha').value;
+    const hora = document.getElementById('conv-hora').value;
+    const tema = document.getElementById('conv-tema').value;
+    const detalle = document.getElementById('conv-detalle').value;
+    const docente = localStorage.getItem('teacher_name') || "El Docente";
+
+    let puntos = [];
+    document.querySelectorAll('.punto-input').forEach(inp => {
+        if(inp.value.trim() !== "") puntos.push("- " + inp.value.trim());
+    });
+
+    if(!fecha || !hora || !tema) { 
+        alert("⚠️ Por favor completa la fecha, hora y tema."); 
+        return; 
+    }
+
+    const promptText = `Actúa como asistente escolar. Redacta una convocatoria formal para una reunión.\n` +
+    `Tema: ${tema}.\n` +
+    `Fecha de la reunión: ${fecha}.\n` +
+    `Hora de la reunión: ${hora}.\n` +
+    (detalle ? `Detalles adicionales: ${detalle}.\n` : '') +
+    `Puntos a tratar:\n${puntos.join("\n")}\n\n` +
+    `Firma obligatoriamente como: Atentamente, ${docente}.\n` +
+    `Que sea un texto directo y formal, listo para enviarse porque lo voy a pegar en un documento especie.`;
+
+    const url = "https://chatgpt.com/?q=" + encodeURIComponent(promptText);
+    window.open(url, '_blank');
+}
+
+// ==========================================
+// 4. LÓGICA DE DIRECTIVAS (AUTOGUARDABLE)
+// ==========================================
+let tipoActual = "";
+
+function prepararDirectiva(tipo) {
+    tipoActual = tipo;
+    mostrarSubPortafolio('sub-directiva');
+    document.getElementById('dir-titulo').innerText = "Directiva de " + tipo;
+    document.getElementById('lista-comisiones').innerHTML = ""; 
+    
+    const draft = JSON.parse(localStorage.getItem('directiva_draft_' + tipo));
+
+    if (draft) {
+        document.getElementById('dir-curso-paralelo').value = draft.curso || "";
+        document.getElementById('dir-presi').value = draft.presi || "";
+        document.getElementById('dir-vice').value = draft.vice || "";
+        document.getElementById('dir-sec').value = draft.sec || "";
+        document.getElementById('dir-teso').value = draft.teso || "";
+        
+        if (draft.comisiones && draft.comisiones.length > 0) {
+            draft.comisiones.forEach(c => agregarBloqueComision(c.nombre, c.coord, c.miembros));
+        } else {
+            agregarBloqueComision();
+        }
+    } else {
+        document.getElementById('dir-curso-paralelo').value = "";
+        document.querySelectorAll('#sub-directiva input.input-field').forEach(i => i.value = "");
+        agregarBloqueComision();
+    }
+}
+
+function guardarDirectivaActual() {
+    if (!tipoActual) return;
+    const data = {
+        curso: document.getElementById('dir-curso-paralelo').value,
+        presi: document.getElementById('dir-presi').value,
+        vice: document.getElementById('dir-vice').value,
+        sec: document.getElementById('dir-sec').value,
+        teso: document.getElementById('dir-teso').value,
+        comisiones: []
+    };
+    
+    document.querySelectorAll('.bloque-comision').forEach(b => {
+        data.comisiones.push({
+            nombre: b.querySelector('.com-nombre').value,
+            coord: b.querySelector('.com-coord').value,
+            miembros: b.querySelector('.com-miembros').value
+        });
+    });
+    
+    localStorage.setItem('directiva_draft_' + tipoActual, JSON.stringify(data));
+}
+
+function agregarBloqueComision(nombre = "", coord = "", miembros = "") {
+    const container = document.getElementById('lista-comisiones');
+    const div = document.createElement('div');
+    div.className = "bloque-comision";
+    div.style = "background: #f4f4f4; padding: 12px; border-radius: 6px; margin-bottom: 12px; border-left: 4px solid var(--secondary);";
+    
+    div.innerHTML = `
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <input type="text" class="com-nombre" placeholder="Nombre de la Comisión (Ej: Disciplina)" value="${nombre}" style="font-weight: bold; width: 85%; border:none; background:transparent; border-bottom: 1px solid #999;">
+            <button onclick="this.parentElement.parentElement.remove(); guardarDirectivaActual();" style="background:none; border:none; color:red; font-weight:bold; cursor:pointer;">✕</button>
+        </div>
+        <div style="margin-bottom: 5px;">
+            <label style="font-size: 12px; display:block;">Coordinador/a:</label>
+            <input type="text" class="com-coord" placeholder="Nombre completo" value="${coord}" style="width: 100%; padding: 4px;">
+        </div>
+        <div>
+            <label style="font-size: 12px; display:block;">Miembros:</label>
+            <textarea class="com-miembros" placeholder="Lista de miembros..." rows="2" style="width: 100%; padding: 4px; font-family: sans-serif;">${miembros}</textarea>
+        </div>
+    `;
+    
+    div.querySelectorAll('input, textarea').forEach(el => {
+        el.addEventListener('input', guardarDirectivaActual);
+    });
+
+    container.appendChild(div);
+    guardarDirectivaActual(); 
+}
+
+function imprimirDirectivaPDF() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const docente = localStorage.getItem('teacher_name') || "Docente Tutor";
+    const curso = document.getElementById('dir-curso-paralelo').value || "No especificado";
+
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text(`ACTA DE DIRECTIVA DE ${tipoActual}`, 105, 20, { align: "center" });
+    
+    doc.setFontSize(11);
+    doc.text(`Institución: Unidad Educativa Particular "García Moreno"`, 14, 30);
+    doc.text(`Curso: ${curso}`, 14, 36);
+    doc.text(`Tutor/a: ${docente}`, 14, 42);
+
+    const dataPrincipal = [
+        ["Presidente/a", document.getElementById('dir-presi').value || "---"],
+        ["Vicepresidente/a", document.getElementById('dir-vice').value || "---"],
+        ["Secretario/a", document.getElementById('dir-sec').value || "---"],
+        ["Tesorero/a", document.getElementById('dir-teso').value || "---"]
+    ];
+
+    doc.autoTable({
+        startY: 48,
+        head: [['Dignidad', 'Nombres y Apellidos']],
+        body: dataPrincipal,
+        headStyles: { fillColor: [139, 58, 76] }, 
+        margin: { top: 48 }
+    });
+
+    let currentY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(13);
+    doc.text("COMISIONES DE TRABAJO", 14, currentY);
+    
+    const bloques = document.querySelectorAll('.bloque-comision');
+    const comisionesData = [];
+
+    bloques.forEach(b => {
+        const nombre = b.querySelector('.com-nombre').value || "Comisión";
+        const coord = b.querySelector('.com-coord').value || "---";
+        const miembros = b.querySelector('.com-miembros').value || "---";
+        comisionesData.push([nombre.toUpperCase(), coord, miembros]);
+    });
+
+    doc.autoTable({
+        startY: currentY + 5,
+        head: [['Comisión', 'Coordinador/a', 'Integrantes']],
+        body: comisionesData,
+        headStyles: { fillColor: [107, 33, 51] },
+        columnStyles: { 2: { cellWidth: 70 } }
+    });
+
+    let finalY = doc.lastAutoTable.finalY + 30;
+    doc.line(75, finalY, 135, finalY);
+    doc.text("Firma del Tutor/a", 105, finalY + 5, { align: "center" });
+
+    const nombreLimpio = `Directiva_${tipoActual}_${curso}`.replace(/ /g, "_");
+    const pdfDataUri = doc.output('datauristring');
+    const link = document.createElement('a');
+    link.href = pdfDataUri;
+    link.download = `${nombreLimpio}.pdf`;
+    link.click();
+}
+
+// ==========================================
+// 5. MÓDULO DE ATENCIÓN Y REFUERZO 
+// ==========================================
+
+function abrirModuloAtencion(tipo) {
+    document.getElementById('atencion-refuerzo').style.display = tipo === 'refuerzo' ? 'block' : 'none';
+    document.getElementById('atencion-representantes').style.display = tipo === 'representantes' ? 'block' : 'none';
+    
+    // USAMOS LA NUEVA FUNCIÓN MAESTRA
+    const dbCursos = obtenerCursosYEstudiantes();
+    const cursos = Object.keys(dbCursos);
+    
+    const selectRef = document.getElementById('ref-curso');
+    const selectRep = document.getElementById('rep-curso');
+    
+    selectRef.innerHTML = '<option value="">-- Seleccione un Curso --</option>';
+    selectRep.innerHTML = '<option value="">-- Seleccione un Curso --</option>';
+    
+    cursos.forEach(c => {
+        selectRef.innerHTML += `<option value="${c}">${c}</option>`;
+        selectRep.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+
+    const now = new Date();
+    now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toISOString().substring(11, 16);
+    
+    if (tipo === 'refuerzo') {
+        document.getElementById('ref-fecha').value = dateStr;
+        document.getElementById('ref-hora').value = timeStr;
+        document.getElementById('ref-tema').innerHTML = '<option value="">-- Seleccione un Tema --</option>';
+    } else {
+        document.getElementById('rep-fecha').value = dateStr;
+        document.getElementById('rep-hora').value = timeStr;
+        document.getElementById('rep-tema').innerHTML = '<option value="">-- Seleccione un Tema --</option>';
+    }
+
+    cargarHistorialAtencion(tipo);
+}
+
+
+function actualizarListasAtencion(tipo) {
+    // Identificamos el curso seleccionado en el desplegable correspondiente
+    let cursoSel = tipo === 'refuerzo' ? 
+        document.getElementById('ref-curso').value : 
+        document.getElementById('rep-curso').value;
+
+    // 1. Manejo de estudiantes (Solo para la vista de Refuerzo Académico)
+    if (tipo === 'refuerzo') {
+        const datalistEst = document.getElementById('list-estudiantes-ref');
+        document.getElementById('ref-estudiante').value = ""; // Limpiamos el buscador de alumnos
+        datalistEst.innerHTML = "";
+
+        if (cursoSel) {
+            // Obtenemos los estudiantes del curso desde la variable global del sistema
+            let estudiantes = studentsData[cursoSel] || [];
+            // Filtramos duplicados y ordenamos alfabéticamente
+            [...new Set(estudiantes)].sort().forEach(est => {
+                datalistEst.innerHTML += `<option value="${est}">`;
+            });
+        }
+    }
+
+    // 2. Manejo de Temas Dinámicos (Para Refuerzo y Representantes)
+    const selectTema = tipo === 'refuerzo' ? 
+        document.getElementById('ref-tema') : 
+        document.getElementById('rep-tema');
+    
+    // Resetear la lista desplegable de temas
+    selectTema.innerHTML = '<option value="">-- Seleccione un Tema --</option>';
+
+    if (cursoSel && planData.length > 0) {
+        const temasCurso = new Set();
+        
+        // Buscamos la columna exacta que corresponde al curso seleccionado
+        const cursoBuscado = cursoSel.replace(/\s+/g, '').toLowerCase();
+        const indiceColumna = headers.findIndex(h => h && h.replace(/\s+/g, '').toLowerCase() === cursoBuscado);
+
+        if (indiceColumna !== -1) {
+            // Recorremos las filas de la planificación para extraer los temas de ese curso
+            planData.forEach(fila => {
+                let temaPlan = fila[indiceColumna];
+                if (typeof temaPlan === 'string') {
+                    temaPlan = temaPlan.trim();
+                    // Filtramos temas vacíos o genéricos (ej. XXXX) según la lógica del sistema [3, 4]
+                    if (temaPlan !== "" && !temaPlan.includes("XXX")) {
+                        temasCurso.add(temaPlan);
+                    }
                 }
             });
-        });
-
-        let prompt = `Actúa como asesor pedagógico. Revisa el reporte de asistencia histórica del curso ${course}:\n\n`;
-        let hayDatos = false;
-
-        estudiantes.forEach(est => {
-            let datos = resumenAsistencia[est];
-            if (datos.total > 0) {
-                hayDatos = true;
-                // Calculamos porcentaje sumando presentes + justificadas
-                let porcentaje = Math.round(((datos.presentes + datos.justificadas) / datos.total) * 100);
-                prompt += `- ${est}: ${porcentaje}% de asistencia (${datos.faltas} faltas y ${datos.justificadas} faltas justificadas, en un total de ${datos.total} clases).\n`;
-            }
-        });
-
-        if (!hayDatos) {
-            alert("Aunque hay fechas creadas, aún no se ha marcado la asistencia de ningún estudiante.");
-            return;
         }
 
-        prompt += "\nGenera un resumen ejecutivo de un párrafo para el tutor del curso. Señala únicamente a los estudiantes que tengan un porcentaje de asistencia preocupante y sugiere 2 estrategias para mejorar el presentismo en el aula, si me vas a hablar de estudiantes en específico que consideres, deja saltos de linea.";
+        // Llenamos el select con los temas encontrados y ordenados
+        Array.from(temasCurso).sort().forEach(t => {
+            selectTema.innerHTML += `<option value="${t}">${t}</option>`;
+        });
+    }
+}
 
-        window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+
+function obtenerDatosFormularioAtencion(tipo) {
+    if (tipo === 'refuerzo') {
+        return {
+            curso: document.getElementById('ref-curso').value,
+            estudiante: document.getElementById('ref-estudiante').value,
+            tema: document.getElementById('ref-tema').value,
+            fecha: document.getElementById('ref-fecha').value,
+            hora: document.getElementById('ref-hora').value
+        };
+    } else {
+        return {
+            motivo: document.getElementById('rep-motivo').value,
+            nombre: document.getElementById('rep-nombre').value,
+            curso: document.getElementById('rep-curso').value || "No especificado",
+            tema: document.getElementById('rep-tema').value || "",
+            fecha: document.getElementById('rep-fecha').value,
+            hora: document.getElementById('rep-hora').value
+        };
+    }
+}
+
+function guardarAtencion(tipo) {
+    const datos = obtenerDatosFormularioAtencion(tipo);
+
+    if (tipo === 'refuerzo') {
+        if (!datos.curso || !datos.estudiante || !datos.tema || !datos.fecha) {
+            return alert("⚠️ Complete Curso, Estudiante, Tema y Fecha para Refuerzo.");
+        }
+    } else {
+        if (!datos.motivo || !datos.nombre || !datos.fecha) {
+            return alert("⚠️ Motivo, Nombre del Representante y Fecha son obligatorios.");
+        }
+    }
+
+    datos.id = Date.now();
+    datos.tipo = tipo === 'representante' ? 'representantes' : tipo;
+
+    let historial = JSON.parse(localStorage.getItem('atencion_history')) || [];
+    historial.push(datos);
+    localStorage.setItem('atencion_history', JSON.stringify(historial));
+
+    cargarHistorialAtencion(datos.tipo);
+    alert("✅ Registro guardado en el historial correctamente.");
+
+    if(tipo === 'refuerzo') {
+        document.getElementById('ref-estudiante').value = '';
+        document.getElementById('ref-tema').value = '';
+    } else {
+        document.getElementById('rep-motivo').value = '';
+        document.getElementById('rep-nombre').value = '';
+        document.getElementById('rep-tema').value = '';
+    }
+}
+
+function imprimirAtencion(tipo) {
+    // 1. Obtener el historial completo
+    const historialStorage = JSON.parse(localStorage.getItem('atencion_history')) || [];
+    
+    // 2. Filtrar solo los de la categoría actual ('refuerzo' o 'representantes')
+    const tipoFiltro = tipo === 'representante' ? 'representantes' : tipo;
+    const historial = historialStorage.filter(h => h.tipo === tipoFiltro);
+
+    if (historial.length === 0) {
+        return alert(`⚠️ No hay registros en el historial de ${tipo === 'refuerzo' ? 'Refuerzo' : 'Atención a Representantes'} para imprimir.`);
+    }
+
+    const docente = localStorage.getItem('teacher_name') || "Docente";
+    let tituloDoc = "";
+    let cabeceras = [];
+    let dataPDF = [];
+
+    // 3. Preparar los datos para la tabla (iniciando por Curso como solicitaste)
+    if (tipo === 'refuerzo') {
+        tituloDoc = "HISTORIAL DE REFUERZO ACADÉMICO";
+        cabeceras = [['Curso', 'Estudiante', 'Fecha', 'Hora', 'Tema a reforzar']];
+        dataPDF = historial.map(h => [
+            h.curso || "---",
+            h.estudiante || "---",
+            h.fecha || "---",
+            h.hora || "---",
+            h.tema || "---"
+        ]);
+    } else {
+        tituloDoc = "HISTORIAL DE ATENCIÓN A REPRESENTANTES";
+        cabeceras = [['Curso', 'Representante', 'Fecha', 'Hora', 'Motivo / Tema']];
+        dataPDF = historial.map(h => {
+            let detalle = h.motivo || "---";
+            if (h.tema && h.tema !== "") detalle += " / " + h.tema;
+            return [
+                h.curso || "---",
+                h.nombre || "---",
+                h.fecha || "---",
+                h.hora || "---",
+                detalle
+            ];
+        });
+    }
+
+    // 4. Crear el PDF
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(15);
+    doc.text(tituloDoc, 105, 20, { align: "center" });
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Unidad Educativa Particular "García Moreno"`, 14, 30);
+    doc.text(`Docente: ${docente}`, 14, 36);
+
+    // 5. Dibujar la tabla
+    doc.autoTable({
+        startY: 42,
+        head: cabeceras,
+        body: dataPDF,
+        theme: 'grid',
+        headStyles: { fillColor: [107, 33, 51] }, // Color institucional
+        styles: { fontSize: 10, cellPadding: 4 },
+        columnStyles: { 0: { fontStyle: 'bold', fillColor: [240, 240, 240] } } // Destacar columna de Curso
+    });
+
+    // 6. Espacio para la firma general al final del documento
+    let finalY = doc.lastAutoTable.finalY + 30;
+    
+    // Si la firma se va a salir de la página, creamos una nueva
+    if (finalY > 270) {
+        doc.addPage();
+        finalY = 30;
+    }
+    
+    doc.line(75, finalY, 135, finalY);
+    doc.text("Firma del Docente", 105, finalY + 5, { align: "center" });
+
+    // 7. Descargar el archivo
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const nombreArchivo = `${tituloDoc.replace(/ /g, "_")}_${dateStr}.pdf`;
+    
+    const pdfDataUri = doc.output('datauristring');
+    const link = document.createElement('a');
+    link.href = pdfDataUri;
+    link.download = nombreArchivo;
+    link.click();
+}
+
+function cargarHistorialAtencion(tipo) {
+    let historial = JSON.parse(localStorage.getItem('atencion_history')) || [];
+    let filtrado = historial.filter(h => h.tipo === tipo);
+    filtrado.sort((a, b) => b.id - a.id);
+
+    let containerId = tipo === 'refuerzo' ? 'historial-refuerzo-container' : 'historial-representantes-container';
+    const container = document.getElementById(containerId);
+    container.innerHTML = '';
+
+    if (filtrado.length === 0) {
+        container.innerHTML = '<p style="color:#777; text-align:center;">No hay registros previos.</p>';
+        return;
+    }
+
+    filtrado.forEach(h => {
+        const div = document.createElement('div');
+        div.style = "padding: 10px; border-bottom: 1px solid #ccc; display: flex; justify-content: space-between; align-items: center;";
+        
+        let texto = "";
+        if (tipo === 'refuerzo') {
+            texto = `<strong style="color:var(--primary);">${h.fecha}</strong> - ${h.curso} | ${h.estudiante} (${h.tema})`;
+        } else {
+            texto = `<strong style="color:var(--primary);">${h.fecha}</strong> - ${h.curso} | Rep: ${h.nombre} | Motivo: ${h.motivo}`;
+        }
+
+        div.innerHTML = `
+            <span style="flex:1;">${texto}</span>
+            <button onclick="eliminarHistorialAtencion(${h.id}, '${tipo}')" style="background:none; border:none; font-size: 16px; cursor:pointer;" title="Eliminar registro">🗑️</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function eliminarHistorialAtencion(id, tipo) {
+    if(!confirm("¿Estás seguro de eliminar este registro del historial?")) return;
+    let historial = JSON.parse(localStorage.getItem('atencion_history')) || [];
+    historial = historial.filter(h => h.id !== id);
+    localStorage.setItem('atencion_history', JSON.stringify(historial));
+    cargarHistorialAtencion(tipo);
+}
+
+
+// ==========================================
+// 6. NUEVO MÓDULO DE COBROS
+// ==========================================
+
+let cobroActualContexto = null; // Variable global para saber qué cobro editamos
+
+function abrirCobros() {
+    mostrarSubPortafolio('sub-cobros');
+    
+    // Llenar la lista de cursos usando tu función maestra
+    const dbCursos = obtenerCursosYEstudiantes();
+    const selectCurso = document.getElementById('cobro-curso');
+    selectCurso.innerHTML = '<option value="">-- Seleccione --</option>';
+    
+    Object.keys(dbCursos).forEach(c => {
+        selectCurso.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+
+    renderBotonesHistorialCobros();
+}
+
+function iniciarNuevoCobro() {
+    cobroActualContexto = null;
+    document.getElementById('cobro-motivo').value = "";
+    document.getElementById('cobro-curso').value = "";
+    document.getElementById('cobro-cantidad').value = "";
+    document.getElementById('cobros-tabla-container').style.display = 'none';
+    document.getElementById('cobros-tbody').innerHTML = "";
+}
+
+function generarTablaCobros() {
+    const motivo = document.getElementById('cobro-motivo').value.trim();
+    const curso = document.getElementById('cobro-curso').value;
+    const cantidad = parseFloat(document.getElementById('cobro-cantidad').value);
+
+    if (!motivo || !curso || isNaN(cantidad)) {
+        return alert("⚠️ Escribe el motivo, selecciona un curso y pon una cantidad válida (ej: 5.50).");
+    }
+
+    const dbCursos = obtenerCursosYEstudiantes();
+    let estudiantes = dbCursos[curso] || [];
+    estudiantes = [...new Set(estudiantes)].filter(e => e.toLowerCase() !== curso.toLowerCase());
+    estudiantes.sort();
+
+    if (estudiantes.length === 0) {
+        return alert("No hay estudiantes registrados en este curso.");
+    }
+
+    // Si es un cobro nuevo o cambiaron de curso
+    if (!cobroActualContexto || cobroActualContexto.curso !== curso) {
+        cobroActualContexto = {
+            id: Date.now().toString(), // ID único
+            motivo: motivo,
+            curso: curso,
+            meta: cantidad,
+            pagos: {}
+        };
+        // Inicializar a todos en cero
+        estudiantes.forEach(est => cobroActualContexto.pagos[est] = 0);
+    } else {
+        // Actualizar datos si es el mismo cobro
+        cobroActualContexto.motivo = motivo;
+        cobroActualContexto.meta = cantidad;
+        // Asegurarse de que todos los estudiantes de la lista existan
+        estudiantes.forEach(est => {
+            if (typeof cobroActualContexto.pagos[est] === 'undefined') {
+                cobroActualContexto.pagos[est] = 0;
+            }
+        });
+    }
+
+    renderizarFilasCobro(estudiantes);
+    document.getElementById('cobros-tabla-container').style.display = 'block';
+    guardarCobroEnMemoria(); // Guardado de seguridad inicial
+}
+
+function renderizarFilasCobro(estudiantes) {
+    const tbody = document.getElementById('cobros-tbody');
+    tbody.innerHTML = '';
+    let sumaTotal = 0;
+
+    estudiantes.forEach(est => {
+        const pagado = parseFloat(cobroActualContexto.pagos[est]) || 0;
+        sumaTotal += pagado;
+        const metaAlcanzada = pagado >= cobroActualContexto.meta;
+        
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = "1px solid #eee";
+        // Si pagó el total, se sombrea verde clarito
+        tr.style.backgroundColor = metaAlcanzada ? '#d4edda' : 'transparent';
+        
+        tr.innerHTML = `
+            <td style="padding: 10px;">
+                <span class="est-nombre" style="${metaAlcanzada ? 'text-decoration: line-through; color: #155724; font-weight: bold;' : 'color: #333;'}">
+                    ${est}
+                </span>
+            </td>
+            <td style="padding: 10px;">
+                <input type="number" step="0.01" class="pago-input" data-estudiante="${est}" value="${pagado || ''}" 
+                       style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; text-align:center;"
+                       oninput="registrarAbonoCobro(this)">
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+    
+    document.getElementById('cobros-total').innerText = `Total Recaudado: $${sumaTotal.toFixed(2)}`;
+}
+
+// Función que se dispara con cada tecla (Guarda al instante)
+function registrarAbonoCobro(input) {
+    const estudiante = input.getAttribute('data-estudiante');
+    let abono = parseFloat(input.value) || 0;
+    
+    // Guardar en la variable local
+    cobroActualContexto.pagos[estudiante] = abono;
+    
+    // Guardar inmediatamente en memoria
+    guardarCobroEnMemoria();
+
+    // Actualizar color y tachado (Feedback visual sin recargar toda la tabla)
+    const tr = input.closest('tr');
+    const spanNombre = tr.querySelector('.est-nombre');
+    const metaAlcanzada = abono >= cobroActualContexto.meta;
+
+    if (metaAlcanzada) {
+        tr.style.backgroundColor = '#d4edda';
+        spanNombre.style.textDecoration = 'line-through';
+        spanNombre.style.color = '#155724';
+        spanNombre.style.fontWeight = 'bold';
+    } else {
+        tr.style.backgroundColor = 'transparent';
+        spanNombre.style.textDecoration = 'none';
+        spanNombre.style.color = '#333';
+        spanNombre.style.fontWeight = 'normal';
+    }
+
+    // Actualizar cuenta total
+    let sumaTotal = 0;
+    Object.values(cobroActualContexto.pagos).forEach(val => sumaTotal += (parseFloat(val) || 0));
+    document.getElementById('cobros-total').innerText = `Total Recaudado: $${sumaTotal.toFixed(2)}`;
+}
+
+function guardarCobroEnMemoria() {
+    if (!cobroActualContexto) return;
+    let historial = JSON.parse(localStorage.getItem('historial_cobros_app')) || [];
+    
+    // Buscamos si ya existe
+    let index = historial.findIndex(h => h.id === cobroActualContexto.id);
+    if (index > -1) {
+        historial[index] = cobroActualContexto; // Actualiza
+    } else {
+        historial.push(cobroActualContexto); // Nuevo
+    }
+    
+    localStorage.setItem('historial_cobros_app', JSON.stringify(historial));
+    renderBotonesHistorialCobros(); // Refresca los botones de abajo
+}
+
+function guardarRegistroDefinitivoCobro() {
+    guardarCobroEnMemoria();
+    alert("✅ Registro de cobro guardado correctamente.");
+}
+
+function renderBotonesHistorialCobros() {
+    const contenedor = document.getElementById('historial-cobros-botones');
+    contenedor.innerHTML = '';
+    let historial = JSON.parse(localStorage.getItem('historial_cobros_app')) || [];
+    
+    if (historial.length === 0) {
+        contenedor.innerHTML = '<p style="color:#777; font-size: 13px;">No hay cobros registrados aún.</p>';
+        return;
+    }
+
+    historial.forEach(cobro => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-action';
+        btn.style.backgroundColor = 'var(--secondary)';
+        btn.style.fontSize = '12px';
+        btn.style.padding = '8px 12px';
+        btn.innerText = `💵 ${cobro.motivo} (${cobro.curso})`;
+        btn.onclick = () => cargarCobroDesdeHistorial(cobro.id);
+        contenedor.appendChild(btn);
+    });
+}
+
+function cargarCobroDesdeHistorial(id) {
+    let historial = JSON.parse(localStorage.getItem('historial_cobros_app')) || [];
+    let registro = historial.find(h => h.id === id);
+    if (!registro) return;
+
+    cobroActualContexto = registro; // Lo cargamos en la variable principal
+
+    // Llenamos el formulario
+    document.getElementById('cobro-motivo').value = registro.motivo;
+    document.getElementById('cobro-curso').value = registro.curso;
+    document.getElementById('cobro-cantidad').value = registro.meta;
+
+    // Extraemos estudiantes oficiales (por si entraron nuevos alumnos al curso)
+    const dbCursos = obtenerCursosYEstudiantes();
+    let estudiantes = dbCursos[registro.curso] || [];
+    estudiantes = [...new Set(estudiantes)].filter(e => e.toLowerCase() !== registro.curso.toLowerCase());
+    estudiantes.sort();
+
+    renderizarFilasCobro(estudiantes);
+    document.getElementById('cobros-tabla-container').style.display = 'block';
+}
+
+function descargarCobroPDF() {
+    if (!cobroActualContexto) return;
+    
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const docente = localStorage.getItem('teacher_name') || "Docente";
+    
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.text("REPORTE DE COBROS Y RECAUDACIÓN", 105, 15, { align: "center" });
+    
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Docente: ${docente}`, 14, 25);
+    doc.text(`Motivo: ${cobroActualContexto.motivo}`, 14, 31);
+    doc.text(`Curso: ${cobroActualContexto.curso}`, 14, 37);
+    doc.text(`Monto a recaudar por estudiante: $${parseFloat(cobroActualContexto.meta).toFixed(2)}`, 14, 43);
+    
+    let dataPDF = [];
+    const estudiantes = Object.keys(cobroActualContexto.pagos).sort();
+    let totalAcumulado = 0;
+
+    estudiantes.forEach(est => {
+        const pagado = parseFloat(cobroActualContexto.pagos[est]) || 0;
+        totalAcumulado += pagado;
+        const estado = pagado >= cobroActualContexto.meta ? "PAGADO" : "PENDIENTE";
+        dataPDF.push([est, `$${pagado.toFixed(2)}`, estado]);
+    });
+    
+    doc.autoTable({
+        startY: 48,
+        head: [['Estudiante', 'Abono Depositado', 'Estado']],
+        body: dataPDF,
+        headStyles: { fillColor: [107, 33, 51] },
+        columnStyles: {
+            1: { halign: 'center' },
+            2: { halign: 'center', fontStyle: 'bold' }
+        }
+    });
+    
+    let finalY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(13);
+    doc.setFont("helvetica", "bold");
+    doc.text(`TOTAL RECAUDADO GENERAL: $${totalAcumulado.toFixed(2)}`, 14, finalY);
+    
+    const nombreArchivo = `Cobros_${cobroActualContexto.motivo.replace(/ /g, "_")}_${cobroActualContexto.curso}.pdf`;
+    const pdfDataUri = doc.output('datauristring');
+    const link = document.createElement('a');
+    link.href = pdfDataUri;
+    link.download = nombreArchivo;
+    link.click();
+}
+
+// ==========================================
+// 7. RESPALDO Y RECUPERACIÓN DE DATOS (BACKUP)
+// ==========================================
+
+function exportarDatosJSON() {
+    // 1. Recolectar absolutamente todo el localStorage
+    let backupData = {};
+    for (let i = 0; i < localStorage.length; i++) {
+        let key = localStorage.key(i);
+        backupData[key] = localStorage.getItem(key);
+    }
+
+    // 2. Convertir a formato JSON
+    const jsonString = JSON.stringify(backupData, null, 2);
+    
+    // 3. Crear un archivo temporal (Blob)
+    const blob = new Blob([jsonString], { type: "application/json" });
+    
+    // 4. Generar nombre de archivo con la fecha actual
+    const now = new Date();
+    const fechaStr = now.toISOString().split('T')[0];
+    const fileName = `Respaldo_App_Docente_${fechaStr}.json`;
+
+    // 5. Descargar el archivo (Compatible con Android WebView)
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        const dataUrl = e.target.result;
+        const link = document.createElement('a');
+        link.href = dataUrl;
+        link.download = fileName;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
     };
+    reader.readAsDataURL(blob);
+}
+
+function importarDatosJSON(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    // Verificar que sea un archivo JSON (por seguridad)
+    if (!file.name.endsWith('.json')) {
+        alert("❌ Error: Solo se permiten archivos de respaldo en formato .json");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const backupData = JSON.parse(e.target.result);
+            
+            // Advertencia de seguridad para evitar borrar datos por error
+            if(confirm("⚠️ ATENCIÓN: Al cargar este respaldo se reemplazará TODA la información actual de la aplicación. ¿Deseas continuar?")) {
+                
+                // Insertar los nuevos datos a la memoria del celular
+                for (let key in backupData) {
+                    localStorage.setItem(key, backupData[key]);
+                }
+
+                alert("✅ Datos restaurados correctamente. La aplicación se va a reiniciar para aplicar los cambios.");
+                
+                // Recargar la app para que todas las listas y vistas se actualicen
+                location.reload(); 
+            }
+        } catch (error) {
+            alert("❌ Error: El archivo está dañado o no es un respaldo válido de esta aplicación.");
+            console.error(error);
+        }
+        
+        // Limpiar el input para permitir cargar otro archivo si ocurre un error
+        document.getElementById('input-cargar-respaldo').value = "";
+    };
+    
+    // Leer el archivo como texto para pasarlo al JSON.parse
+    reader.readAsText(file);
+}
+
 </script>
 
 </body>
