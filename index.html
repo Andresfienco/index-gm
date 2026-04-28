@@ -226,6 +226,13 @@
     background-color: #f57c00; /* Naranja: Justificado */
 }
 
+.btn-estado-asistencia.estado-4 {
+    background-color: #00bcd4; /* Celeste: Atraso */
+}
+.btn-estado-asistencia.estado-5 {
+    background-color: #9c27b0; /* Morado: Fuga */
+}
+
 /* Efecto para seleccionar una fila y ver su estadística individual */
 .fila-asistencia.seleccionada {
     background-color: #e3d5c8; /* Un tono sutil para destacar */
@@ -289,13 +296,22 @@
             <input type="text" id="inspectorNameInput" placeholder="Nombre del Inspector (Ej: Ing. Enrique Gutiérrez)" style="margin-bottom: 5px;">
             <input type="text" id="inspectorPhoneInput" placeholder="Teléfono del Inspector (Ej: 099...)" style="margin-bottom: 5px;">
 
-            <label><strong>Link de Cuaderno de Trabajo:</strong></label>
+            <label><strong>Link de Bitacoras:</strong></label>
             <input type="text" id="WorkbookNameInput" placeholder="www.google.com/drive/098483" style="margin-bottom: 5px;">
+
+            <label><strong>Link de Portafolio:</strong></label>
+            <input type="text" id="PortfolioLinkInput" placeholder="www.enlace-al-portafolio.com" style="margin-bottom: 5px;">
         </div>
 
         <div id="scheduleConfigContainer" style="display:none; margin-top: 20px;">
             <p><strong>Paso 2:</strong> Selecciona días/horas, el número del Tutor, y gestiona estudiantes o temario.</p>
             
+
+ <button class="btn-info" style="width: 100%; margin-bottom: 15px; background-color: #4b2d39;" onclick="openTimeConfigModal()">
+        ⚙️ Configurar Estructura de Horas (Agregar/Quitar)
+    </button>
+
+
             <div id="courseSchedules" class="schedule-grid"></div>
             <button class="btn-action" style="width: 100%; margin-top: 10px;" onclick="saveSchedules()">Guardar Configuración Completa</button>
         </div>
@@ -381,6 +397,46 @@
 </div>
 
 
+<div id="resumenModal" class="modal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="document.getElementById('resumenModal').style.display='none'">×</button>
+        <h3 id="resumenModalNombre" style="color: var(--primary); margin-top: 0;">Nombre del Estudiante</h3>
+        <div id="resumenDetalleCuerpo" style="text-align: left; font-size: 14px; line-height: 1.6;">
+            <!-- Aquí se inyectará el conteo -->
+        </div>
+    </div>
+</div>
+
+<div id="horarioClasesModal" class="modal">
+    <div class="modal-content" style="max-width: 800px;">
+        <button class="close-modal" onclick="document.getElementById('horarioClasesModal').style.display='none'">×</button>
+        <h3 style="color: var(--primary); margin-top: 0;">📅 Horario de Clases Docente</h3>
+        <div id="contenedorTablaHorario" style="overflow-x: auto; margin-top: 15px;">
+            <!-- Aquí se inyectará la tabla -->
+        </div>
+    </div>
+</div>
+
+
+<div id="timeConfigModal" class="modal">
+    <div class="modal-content" style="max-width: 500px;">
+        <button class="close-modal" onclick="document.getElementById('timeConfigModal').style.display='none'">×</button>
+        <h3 style="color: var(--primary); margin-top: 0;">Configurar Estructura de Horas</h3>
+        <p style="font-size: 12px; color: #666;">Define las etiquetas y rangos de tiempo. Estos se aplicarán a todos los cursos.</p>
+        
+        <div id="timeConfigList" style="margin-top: 15px; max-height: 350px; overflow-y: auto;">
+            <!-- Las filas de horas se cargarán aquí -->
+        </div>
+
+        <div style="margin-top: 15px; display: flex; gap: 10px;">
+            <button class="btn-success" style="flex: 1;" onclick="addTimeSlotRow()">+ Añadir Hora</button>
+            <button class="btn-action" style="flex: 1;" onclick="saveTimeConfig()">Guardar Cambios</button>
+        </div>
+    </div>
+</div>
+
+
+
 <div class="container" style="text-align: left; position: relative; padding: 10px;">
     <div style="font-size: 11px; color: #666; line-height: 1; margin-bottom: 0px;">
         <i> Developed by: Andres Fienco </i>
@@ -388,7 +444,7 @@
 
     <div style="display: flex; align-items: center; justify-content: center; min-height: 90px; gap: 0px;">
 
-    
+        <img src="LOGO.png" alt="Logo" style="width: 60px; height: auto; position: absolute; left: 0;">
 
         <h2 style="margin: 0; font-size: 1.3rem; line-height: 1.2; text-align: center; width: 100%;" 
             onclick="alert('Este sistema ha sido desarrollado por: ⛩️ Andrés Fienco\n© 2026 Andrés Fienco. Todos los derechos reservados.\nQueda prohibida la reproducción total o parcial sin autorización.\nPor motivos de seguridad y privacidad, los datos se almacenan localmente. \nAl desinstalar la aplicación, se eliminarán permanentemente.')"
@@ -407,6 +463,8 @@
         <button class="tab-btn" onclick="switchTab('missingTasks')">3. Tareas</button>
         <button class="tab-btn" onclick="switchTab('disciplineView')">4. Reportes</button>
         <button class="tab-btn" onclick="switchTab('asistenciaView')">5. Asistencia</button>
+     
+        <button class="tab-btn" onclick="switchTab('resumenView')">Resumen</button>
     </div>
     </br>
     <div style="display: flex; justify-content: center; margin-bottom: 25px; margin-top: -10px;">
@@ -441,10 +499,11 @@
                 <h3 style="color: var(--primary); margin-bottom: 15px;">🛠️ Enlaces Utilitarios</h3>
                 <div style="display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
                     <a href="https://uepgarciamoreno.runacode.com/public/indexmateriasmostrar/1" target="_blank" class="course-btn" style="text-decoration: none;">🌐 RUNACHAY</a>
-                    <a href="https://mega.nz/folder/PiY1gagB#NLoz2FBEJ-N9BBfxY5jPwA" target="_blank" class="course-btn" style="text-decoration: none;">📁 UTILITARIOS</a>
+                    <a href="https://mega.nz/folder/PiY1gagB#NLoz2FBEJ-N9BBfxY5jPwA" target="_blank" class="course-btn" style="text-decoration: none;">📝 UTILITARIOS</a>
                     <a href="https://docs.google.com/spreadsheets/d/1nKd2riz7ORKXx7UOtFXRbq0NZs94ddKRtcYqX6IiGrE/edit?usp=drive_link" target="_blank" class="course-btn" style="text-decoration: none;">💳 PAGOS</a>
-                    <a href="https://chat.whatsapp.com/KrObqyyWYUK44sztvHg4Rk?mode=gi_t" target="_blank" class="course-btn" style="text-decoration: none;">💬 COMUNICACIÓN</a>
-                    <button onclick="WorkbookName()" target="_blank" class="course-btn" style=" font-size: 16px; text-decoration: none;">📚 WORKBOOK </button>
+                    <a href="https://chat.whatsapp.com/KrObqyyWYUK44sztvHg4Rk?mode=gi_t" target="_blank" class="course-btn" style="text-decoration: none;">💬 WHATSAPP</a>
+                    <button onclick="WorkbookName()" target="_blank" class="course-btn" style=" font-size: 16px; text-decoration: none;">📚 BITACORAS </button>
+                    <button onclick="PortfolioLink()" class="course-btn" style="font-size: 16px; text-decoration: none;">📂 PORTAFOLIO </button>
                 </div>
             </div>
 
@@ -556,6 +615,8 @@
                         <li><strong>Asistió:</strong> <span id="stat-dia-asistio" style="color: var(--success); font-weight: bold;">0%</span></li>
                         <li><strong>Faltó:</strong> <span id="stat-dia-falto" style="color: red; font-weight: bold;">0%</span></li>
                         <li><strong>Justificó:</strong> <span id="stat-dia-justifico" style="color: orange; font-weight: bold;">0%</span></li>
+                        <li><strong>Atraso:</strong> <span id="stat-dia-atraso" style="color: #00bcd4; font-weight: bold;">0%</span></li>
+                        <li><strong>Fuga:</strong> <span id="stat-dia-fuga" style="color: #9c27b0; font-weight: bold;">0%</span></li>
                     </ul>
                 </div>
 
@@ -566,6 +627,8 @@
                         <li><strong>Asistió:</strong> <span id="stat-hist-asistio" style="color: var(--success); font-weight: bold;">0%</span></li>
                         <li><strong>Faltó:</strong> <span id="stat-hist-falto" style="color: red; font-weight: bold;">0%</span></li>
                         <li><strong>Justificó:</strong> <span id="stat-hist-justifico" style="color: orange; font-weight: bold;">0%</span></li>
+                        <li><strong>Atraso:</strong> <span id="stat-hist-atraso" style="color: #00bcd4; font-weight: bold;">0%</span></li>
+                        <li><strong>Fuga:</strong> <span id="stat-hist-fuga" style="color: #9c27b0; font-weight: bold;">0%</span></li>
                     </ul>
                     <button id="btn-volver-stat-curso" onclick="mostrarEstadisticaGeneralCurso()" class="tab-btn" style="display: none; width: 100%; margin-top: 15px; font-size: 0.85em;">Ver general del curso</button>
                   <div id="caja-fechas-faltas"></div>
@@ -620,7 +683,7 @@
             </div>
             <button onclick="agregarPunto()" class="btn-info" style="margin-top: 5px;">+ Agregar otro punto</button>
         </div>
-        <button class="btn-action" style="width: 100%; margin-top: 10px; font-size: 16px; padding: 12px;" onclick="generarConvocatoriaChatGPT()">🤖 Generar en ChatGPT</button>
+        <button class="btn-action" style="width: 100%; margin-top: 10px; font-size: 16px; padding: 12px;" onclick="generarConvocatoriaChatGPT()">Generar en Convocatoria</button>
     </div>
 
     <div id="sub-directiva" style="display:none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 15px;" oninput="guardarDirectivaActual()">
@@ -735,6 +798,21 @@
     </div>
 </div>
 
+
+<div id="resumenView" class="tab-content" style="display: none; padding: 15px; background: white; border-radius: 8px;">
+    <h2 style="color: var(--primary);">📊 Resumen General del Estudiante</h2>
+    <div style="background: #fdf2f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Seleccione el Curso:</label>
+        <select id="resumen-curso" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" onchange="renderizarEstudiantesResumen()">
+            <option value="">-- Seleccione un curso --</option>
+        </select>
+    </div>
+    <div id="resumen-lista-estudiantes" style="display: flex; flex-direction: column; gap: 8px;">
+        <!-- Aquí aparecerán los estudiantes [6] -->
+    </div>
+</div>
+
+
     <div id="documentationView" class="tab-content">
         <div class="course-buttons" style="justify-content: center; margin-bottom: 10px;">
             <button class="course-btn active" id="btnDocEjemplos" onclick="switchDocTab('ejemplosView', this)">CLASES</button>
@@ -823,10 +901,14 @@
                     
                     <label style="font-size: 12px; font-weight: bold; color: var(--primary);">Información adicional (Opcional):</label>
                     <textarea id="ejemplosInfoAdicional" placeholder="Ej: Que sean ejemplos prácticos para niños de 10 años...
-Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; height: 60px; margin-bottom: 10px; resize: vertical;"></textarea>
+Ej: Que la teoría tenga la siguiente estructura...
+Ej: Grupos de 4...
+Ej: Criterio 1, Criterio 2, Criterio 3, Criterio 4, Criterio 5..." style="width: 100%; box-sizing: border-box; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-family: inherit; height: 60px; margin-bottom: 10px; resize: vertical;"></textarea>
                     
                     <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #8E3A2D; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarEjemplosPerplexity()">Generar Ejemplos con AI</button>
                     <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #1B4D3E; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarEjemplosPerplexityt()">Generar Teoría con AI</button>
+
+                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #2D4B4B; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarBitacoraPerplexity()">Generar Bitácora con AI</button>
                 </div>
  <div id="examenesManager" style="display:none; margin-top: 15px;">
                     <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Ejemplo de Exámenes</h4>
@@ -915,17 +997,17 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
     
     const daysMap = { "1": "Lunes", "2": "Martes", "3": "Miércoles", "4": "Jueves", "5": "Viernes" };
 
-    const timeSlots = {
-        1: { label: "Hora 1 (07:15 - 07:55)", start: 7*60+15, end: 7*60+55 },
-        2: { label: "Hora 2 (07:55 - 08:35)", start: 7*60+55, end: 8*60+35 },
-        3: { label: "Hora 3 (08:35 - 09:15)", start: 8*60+35, end: 9*60+15 },
-        4: { label: "Hora 4 (09:15 - 09:55)", start: 9*60+15, end: 9*60+55 },
-        5: { label: "Hora 5 (09:55 - 10:25)", start: 9*60+55, end: 10*60+25 },
-        6: { label: "Hora 6 (10:25 - 11:05)", start: 10*60+25, end: 11*60+5 },
-        7: { label: "Hora 7 (11:05 - 11:45)", start: 11*60+5, end: 11*60+45 },
-        8: { label: "Hora 8 (11:45 - 12:25)", start: 11*60+45, end: 12*60+25 },
-        9: { label: "Hora 9 (12:25 - 13:00)", start: 12*60+25, end: 13*60+0 }
-    };
+    let timeSlots = JSON.parse(localStorage.getItem('time_slots_config')) || {
+    1: { label: "Hora 1 (07:15 - 07:55)", start: 7*60+15, end: 7*60+55 },
+    2: { label: "Hora 2 (07:55 - 08:35)", start: 7*60+55, end: 8*60+35 },
+    3: { label: "Hora 3 (08:35 - 09:15)", start: 8*60+35, end: 9*60+15 },
+    4: { label: "Hora 4 (09:15 - 09:55)", start: 9*60+15, end: 9*60+55 },
+    5: { label: "Hora 5 (09:55 - 10:25)", start: 9*60+55, end: 10*60+25 },
+    6: { label: "Hora 6 (10:25 - 11:05)", start: 10*60+25, end: 11*60+5 },
+    7: { label: "Hora 7 (11:05 - 11:45)", start: 11*60+5, end: 11*60+45 },
+    8: { label: "Hora 8 (11:45 - 12:25)", start: 11*60+45, end: 12*60+25 },
+    9: { label: "Hora 9 (12:25 - 13:00)", start: 12*60+25, end: 13*60+0 }
+};
 
     function isCurrentSlot(h) {
         const now = new Date();
@@ -961,6 +1043,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         document.getElementById('inspectorNameInput').value = localStorage.getItem('inspector_name') || "";
         document.getElementById('inspectorPhoneInput').value = localStorage.getItem('inspector_phone') || "";
         document.getElementById('WorkbookNameInput').value = localStorage.getItem('WorkbookName') || "";
+        document.getElementById('PortfolioLinkInput').value = localStorage.getItem('PortfolioLink') || ""; 
 
         const todayStr = new Date().toISOString().split('T')[0];
         document.getElementById('reunionFecha').value = todayStr;
@@ -979,56 +1062,37 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
 
    // SISTEMA DE PESTAÑAS PRINCIPAL
     function switchTab(tabId) {
-        document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
-        document.querySelectorAll('.tabs .tab-btn, .container > div > .tab-btn').forEach(el => el.classList.remove('active'));
-        
-        // --- AQUÍ ESTÁ LA SOLUCIÓN ---
-        let vistaActiva = document.getElementById(tabId);
+    // 1. Ocultar todo
+    document.querySelectorAll('.tab-content').forEach(el => {
+        el.classList.remove('active');
+        el.style.display = 'none'; // Asegura que se oculten
+    });
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+    // 2. Mostrar la pestaña seleccionada
+    let vistaActiva = document.getElementById(tabId);
+    if (vistaActiva) {
         vistaActiva.classList.add('active');
-        vistaActiva.style.display = ''; // <-- Esta línea destruye el "display: none" manual para dejar actuar a la clase 'active'
-        // ------------------------------
-        
-        const activeBtns = Array.from(document.querySelectorAll('.tab-btn')).filter(b => b.getAttribute('onclick').includes(tabId));
-        activeBtns.forEach(btn => btn.classList.add('active'));
-        
-        if(tabId === 'dailyView') {
-            renderDailyView();
-            setTimeout(() => { if(!calendarInstance) initCalendar(); calendarInstance.render(); }, 50);
-        }
-        
-        if(tabId === 'listView') {
-            if (currentCourseListIndex === null) renderTodayTopicsList();
-            else renderList(currentCourseListIndex);
-        }
-
-       if(tabId === 'missingTasks') {
-            // Le damos un respiro de 100ms al sistema para que termine de cargar los botones de los cursos
-            setTimeout(() => {
-                // Buscamos específicamente el botón que dice "Ver Todo" dentro del contenedor de tareas
-                const botones = document.querySelectorAll('#courseButtonsTasks button');
-                const btnVerTodo = Array.from(botones).find(b => b.innerText.includes('Ver Todo'));
-                
-                // Si no hay un curso seleccionado actualmente, hacemos el "clic fantasma" [7]
-                if (!currentCourseTaskName && btnVerTodo) {
-                    btnVerTodo.click();
-                } else if (!currentCourseTaskName) {
-                    // Respaldo manual si el botón no responde: activamos la vista global directamente [3]
-                    document.getElementById('taskManager').style.display = 'none';
-                    document.getElementById('taskCountView').style.display = 'none';
-                    document.getElementById('allTasksView').style.display = 'block';
-                    renderAllPendingTasks();
-                }
-            }, 100);
-        }
-
-        if(tabId === 'disciplineView') {
-            if (!currentCourseDisciplineName) {
-                document.getElementById('disciplineManager').style.display = 'none';
-                document.getElementById('allDisciplineView').style.display = 'block';
-                renderAllDisciplineRecords();
-            }
-        }
+        vistaActiva.style.display = 'block';
     }
+
+    // 3. Activar el botón visualmente
+    const botones = document.querySelectorAll('.tab-btn');
+    botones.forEach(btn => {
+        if(btn.getAttribute('onclick') && btn.getAttribute('onclick').includes(tabId)) {
+            btn.classList.add('active');
+        }
+    });
+
+    // 4. LÓGICA ESPECÍFICA PARA EL BOTÓN 7 (Aquí es donde cargan los cursos)
+    if(tabId === 'resumenView') {
+        prepararPestañaResumen();
+    }
+
+    // 5. Mantener las lógicas de las otras pestañas (Opcional, si las usas)
+    if(tabId === 'dailyView') renderDailyView();
+    if(tabId === 'disciplineView' && !currentCourseDisciplineName) renderAllDisciplineRecords();
+} // <--- LA LLAVE DE CIERRE DEBE IR AL FINAL DE TODO
 
  // GUARDAR ENLACE
  
@@ -1347,7 +1411,7 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
      window.enviarEjemplosPerplexityt = function() {
         const tema = document.getElementById('ejemplosTopicSelect').value, info = document.getElementById('ejemplosInfoAdicional').value.trim();
         if (!tema) { alert("Por favor, selecciona un tema."); return; }
-        let prompt = `Asume el rol de docente de una institución educativa. Genera el contenido teórico del siguiente tema: ${tema}, no hables como docente, solo genera la información, que esté la información en tercera persona, que tenga sus citas bibliograficas según apa séptima edición, has la estructura que tú consideres y me mostrarás la información así: titulo segun el tema, salto de linea, la información teórica con temas y subtemas con numeración comenzando siempre con una definición y luego los demas subtemas, salto de línea, las referencias bibliográficas.`;
+        let prompt = `Asume el rol de docente de una institución educativa. Genera el contenido teórico del siguiente tema: ${tema}, no hables como docente, solo genera la información con un profesional, que esté la información en tercera persona, que tenga sus citas bibliograficas según apa séptima edición, has la estructura que tú consideres y me mostrarás la información así: titulo segun el tema, salto de linea, la información teórica segun la estructura que tu consideres con temas y subtemas definidos y con numeración comenzando siempre con una definición, salto de línea, las referencias bibliográficas.`;
         if (info) prompt += ` te doy una información adicional: ${info}`;
         window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
     };
@@ -1364,6 +1428,38 @@ Ej: Que la teoría tenga la siguiente estructura..." style="width: 100%; box-siz
         window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
     };
     
+
+window.enviarBitacoraPerplexity = function() {
+    const tema = document.getElementById('ejemplosTopicSelect').value;
+    const info = document.getElementById('ejemplosInfoAdicional').value.trim();
+    
+    if (!tema) { 
+        alert("Por favor, selecciona un tema de la lista."); 
+        return; 
+    }
+
+    // NUEVO PROMPT: Enfoque prospectivo (Guía para el docente)
+    let prompt = `Asume el rol de docente experto de la Unidad Educativa Particular "García Moreno". Genera una guía docente de clase (bitácora prospectiva) detallada para la lección que voy a impartir sobre el tema: ${tema}. 
+
+    Este documento debe servirme como una hoja de ruta clara sobre cómo debo llevar la clase de principio a fin. Por favor, incluye:
+    1. **Objetivo de la sesión**: Qué deben lograr los estudiantes hoy.
+    2. **Estrategia de Apertura**: Una forma creativa o dinámica de introducir el tema y captar la atención.
+    3. **Guion de Explicación**: Los puntos clave que debo explicar y en qué orden lógico hacerlo.
+    4. **Desarrollo de Actividades**: Una secuencia paso a paso de las dinámicas o ejercicios prácticos que realizarán los alumnos.
+    5. **Recursos y Materiales**: Qué debo tener listo para que la clase fluya sin problemas.
+    6. **Cierre y Verificación**: Una actividad breve para comprobar el aprendizaje antes de terminar.`;
+
+    // Si agregas notas en el cuadro de "Información adicional", se suman aquí
+    if (info) {
+        prompt += `\n\n**Consideraciones adicionales para mi guía**: ${info}`;
+    }
+
+    prompt += `\n\nRedacta la guía de forma profesional, pedagógica y directa, diseñada para que yo pueda leerla y seguirla fácilmente mientras doy la clase.`;
+
+    // Abrir Perplexity con el prompt actualizado
+    window.open(`https://www.perplexity.ai/?q=${encodeURIComponent(prompt)}`, '_blank');
+};
+
 
     // LÓGICA DE GRUPOS
 
@@ -1511,7 +1607,7 @@ function generarRubricaConIA() {
             return;
         }
 
-        let prompt = `Actúa como un docente experto en planificación educativa de clases para ${currentCoursePlanificacionName} con el tema ${tema}, Necesito que elabores una planificación en formato de proyecto educativo siguiendo estrictamente esta estructura:
+        let prompt = `Actúa como un docente experto en planificación educativa de clases para ${currentCoursePlanificacionName} con el tema ${tema}, Necesito que elabores una planificación con los principios de DUA, siguiendo estrictamente esta estructura:
 
 * Nombre del tema
 * Objetivo del Proyecto (entre uno o dos)
@@ -1532,9 +1628,10 @@ Condiciones obligatorias:
 
 * Pon en viñetas (•) los objetivos, las destrezas, los indicadores, las viñenas de las Estrategias metodológicas, las técnica, y abajo, los instrumentos, no usar numeración.
 * No usar negritas ni formatos especiales.
+* En las estratégias metodologicas, en cada actividad (viñetas) agrega al final entre parentesis el pricipio DUA en caso requiera, no todas, algunas pueden tener 2 o 3, son: Representación, Acción y Expresión, Implicación.
 * Los objetivos deben estar en verbo en infinitivo.
 * Redacción clara, pedagógica y acorde al nivel educativo.
-* Las destrezas deben iniciar con verbos en presente (ej. utiliza, identifica, analiza, aplica, etc, la que tú consideres).
+* Las destrezas deben iniciar con verbos en presente (ej. utiliza, identifica, analiza, aplica, etc, la que tú consideres, etc).
 * Los indicadores deben ser observables y medibles.
 * Las actividades deben ser coherentes con el tema.
 * Mantener coherencia entre objetivo, destrezas e indicadores.`;
@@ -1751,7 +1848,12 @@ function inicializarAsistenciaAutomaticamente() {
             const daysHTML = Object.entries(daysMap).map(([id, name]) => {
                 const isChecked = savedDays.hasOwnProperty(id), savedHour = isChecked ? savedDays[id] : "";
                 let hourOptions = '<option value="">Sin hora asignada</option>';
-                for(let h=1; h<=9; h++) hourOptions += `<option value="${h}" ${savedHour == h ? 'selected' : ''}>Hora ${h}</option>`;
+Object.keys(timeSlots).sort((a,b) => a-b).forEach(h => {
+    hourOptions += `<option value="${h}" ${savedHour == h ? 'selected' : ''}>${timeSlots[h].label}</option>`;
+});
+
+
+
                 return `<div class="day-row"><label><input type="checkbox" class="day-cb" value="${id}" data-course="${course}" ${isChecked ? 'checked' : ''} onchange="toggleHourSelect(this)">${name}</label><select class="hour-select" data-course="${course}" data-day="${id}" style="display: ${isChecked ? 'block' : 'none'}; width: auto; padding: 5px;">${hourOptions}</select></div>`;
             }).join('');
             
@@ -1871,6 +1973,8 @@ function inicializarAsistenciaAutomaticamente() {
         let iName = document.getElementById('inspectorNameInput').value.trim();
         let iPhone = document.getElementById('inspectorPhoneInput').value.trim();
         let Url = document.getElementById('WorkbookNameInput').value.trim();
+        let UrlPortfolio = document.getElementById('PortfolioLinkInput').value.trim();
+
 
         if(tPhone.startsWith('0')) tPhone = '+593' + tPhone.substring(1);
         if(iPhone.startsWith('0')) iPhone = '+593' + iPhone.substring(1);
@@ -1880,6 +1984,7 @@ function inicializarAsistenciaAutomaticamente() {
         localStorage.setItem('inspector_name', iName);
         localStorage.setItem('inspector_phone', iPhone);
         localStorage.setItem('WorkbookName', Url);
+        localStorage.setItem('PortfolioLink', UrlPortfolio);
 
         courseSchedules = {};
         coursePhones = {};
@@ -1965,15 +2070,14 @@ function inicializarAsistenciaAutomaticamente() {
             }
         }
 
-        for (let h = 1; h <= 9; h++) {
-            const activeClass = (isToday && isCurrentSlot(h)) ? 'current-slot' : (!isToday ? 'other-day-slot' : '');
-
-            if (scheduledTopics[h]) {
-                scheduledTopics[h].forEach(item => dailyGrid.innerHTML += createSlotHTML(h, item, activeClass, true));
-            } else {
-                dailyGrid.innerHTML += `<div class="hour-slot empty-slot ${activeClass}"><span class="hour-badge" style="color:#aaa;">${timeSlots[h].label}</span><span style="color:#ccc; font-size:13px; font-style:italic;">Hora libre o sin curso asignado</span></div>`;
-            }
-        }
+        Object.keys(timeSlots).sort((a, b) => a - b).forEach(h => {
+    const activeClass = (isToday && isCurrentSlot(h)) ? 'current-slot' : (!isToday ? 'other-day-slot' : '');
+    if (scheduledTopics[h]) {
+        scheduledTopics[h].forEach(item => dailyGrid.innerHTML += createSlotHTML(h, item, activeClass, true));
+    } else {
+        dailyGrid.innerHTML += `<div class="hour-slot empty-slot ${activeClass}"><span class="hour-badge" style="color:#aaa;">${timeSlots[h].label}</span><span style="color:#ccc; font-size:13px; font-style:italic;">Hora libre o sin curso asignado</span></div>`;
+    }
+});
 
         let hasUnassigned = false;
         unassignedTopics.forEach(item => { hasUnassigned = true; unassignedGrid.innerHTML += createSlotHTML(null, item, (!isToday ? 'other-day-slot' : ''), true); });
@@ -2150,17 +2254,27 @@ function inicializarAsistenciaAutomaticamente() {
         if (calendarInstance) return;
 
         calendarInstance = new FullCalendar.Calendar(calendarEl, {
-            initialView: 'twoWeeks', 
-            views: { twoWeeks: { type: 'dayGrid', duration: { weeks: 2 } } },
-            locale: 'es',
-            height: 'auto', contentHeight: 'auto',
-            weekends: false, 
-            dayCellContent: function(arg) {
-                return { html: `<a class="fc-daygrid-day-number">${arg.date.getDate()}</a>` };
-            },
-            buttonText: { today: 'Hoy', twoWeeks: '2 Semanas', dayGridWeek: 'Semanal', dayGridMonth: 'Mensual' },
-            headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
-            footerToolbar: { left: '', center: 'twoWeeks,dayGridWeek,dayGridMonth', right: '' },
+    initialView: 'twoWeeks',
+    views: { twoWeeks: { type: 'dayGrid', duration: { weeks: 2 } } },
+    locale: 'es',
+    height: 'auto', contentHeight: 'auto',
+    weekends: false,
+    // Definición del nuevo botón
+    customButtons: {
+        btnHorario: {
+            text: 'Horario',
+            click: function() {
+                verHorarioTabla(); // Función que abrirá el modal
+            }
+        }
+    },
+    dayCellContent: function(arg) {
+        return { html: `<a class="fc-daygrid-day-number">${arg.date.getDate()}</a>` };
+    },
+    buttonText: { today: 'Hoy', twoWeeks: '2 Semanas', dayGridWeek: 'Semanal', dayGridMonth: 'Mensual' },
+    headerToolbar: { left: 'prev,next today', center: 'title', right: '' },
+    // Agregamos btnHorario al centro, al lado de dayGridMonth
+    footerToolbar: { left: '', center: 'twoWeeks,dayGridWeek,dayGridMonth,btnHorario', right: '' },
             datesSet: function(info) {
                 if (info.view.type === 'dayGridWeek') {
                     document.getElementById('btnStartWeekContainer').style.display = 'block';
@@ -2908,7 +3022,7 @@ function inicializarAsistenciaAutomaticamente() {
                     </div>
                     <div style="display:flex; flex-direction:column; gap:5px; margin-left:10px;">
                         <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;" onclick="sendWhatsAppDiscipline('${courseName}', '${r.id}')">💬 WhatsApp a Inspector</button>
-                        <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;" onclick="generateOficio('${courseName}', '${r.id}')">📄 Redacción a WhatsApp</button>
+                        <button style="background-color: ${reportColor}; color: white; border: none; padding: 6px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: bold;" onclick="generateOficio('${courseName}', '${r.id}')">📄 Descargar Documento</button>
                         <button class="btn-delete" onclick="deleteDisciplineRecord('${r.id}', '${courseName}')">🗑️ Eliminar</button>
                     </div>
                 </div>`;
@@ -3052,31 +3166,69 @@ function inicializarAsistenciaAutomaticamente() {
         if(isModal) showGlobalStudentDisciplineHistory(r.student);
     };
 
-    window.generateOficio = function(course, id, isModal = false) {
-        let r = disciplineRecords[course].find(x => x.id === id);
-        if(!r) return;
+   window.generateOficio = function(course, id, isModal = false) {
+    let r = disciplineRecords[course].find(x => x.id === id);
+    if(!r) return;
 
-        r.reported = true;
-        localStorage.setItem('reportes_disciplina', JSON.stringify(disciplineRecords));
-        if(currentCourseDisciplineName && !isModal) renderDisciplineRecordsList();
-        if (document.getElementById('allDisciplineView').style.display === 'block') renderAllDisciplineRecords();
+    // Marcamos como reportado
+    r.reported = true;
+    localStorage.setItem('reportes_disciplina', JSON.stringify(disciplineRecords));
+    if(currentCourseDisciplineName && !isModal) renderDisciplineRecordsList();
+    if (document.getElementById('allDisciplineView').style.display === 'block') renderAllDisciplineRecords();
 
-        let teacherName = localStorage.getItem('teacher_name') || '[Nombre del docente]';
-        let teacherPhone = localStorage.getItem('teacher_phone') || '';
-        let inspectorName = localStorage.getItem('inspector_name') || '[Nombre del Inspector]';
-        let todayStr = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
+    // Obtener datos del docente e institución [5]
+    const teacherName = localStorage.getItem('teacher_name') || '[Nombre del docente]';
+    const inspectorName = localStorage.getItem('inspector_name') || '[Nombre del Inspector]';
+    const todayStr = new Date().toLocaleDateString('es-ES', { year: 'numeric', month: 'long', day: 'numeric' });
 
-        if(!teacherPhone) {
-            alert("Por favor, agrega tu número de teléfono (Docente) en Configuración para poder enviarte la redacción.");
-            return;
-        }
-        teacherPhone = teacherPhone.replace(/[^\d+]/g, '');
+    // Configuración del PDF con jsPDF [7]
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    // Encabezado Institucional [8]
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(14);
+    doc.text('Unidad Educativa Particular "García Moreno"', 105, 20, { align: "center" });
+    doc.setFontSize(10);
+    doc.text('REPORTE DISCIPLINARIO', 105, 26, { align: "center" });
+    doc.line(20, 30, 190, 30); // Línea divisoria
 
-        const msg = `${todayStr}\nAsunto: Reporte Nº${r.ticket || '000'} al Departamento de Inspección\nPara: ${inspectorName}\n\nEstimado Inspector General:\n\nPor medio de la presente, me permito informar que, en fecha ${r.date}, a las ${r.time}, el/la estudiante ${r.student}, presentó una conducta inapropiada durante el desarrollo de la jornada académica.\n\nEn este contexto, se evidenció un comportamiento que contraviene las normas de convivencia institucional, por lo siguiente: ${r.desc}. Esta situación incidió de manera directa en el normal desarrollo de las actividades académicas, así como en el adecuado ambiente de aprendizaje dentro del aula.\n\nEn virtud de lo expuesto, pongo en su conocimiento el presente reporte con la finalidad de que se proceda conforme a lo establecido en la normativa institucional vigente y se determinen las acciones correspondientes.\n\nSin otro particular, quedo atento(a) a cualquier disposición adicional que se estime pertinente.\n\nAtentamente,\n${teacherName}\nDocente\n`;
-        
-        window.open(`https://wa.me/${teacherPhone}?text=${encodeURIComponent(msg)}`, '_blank');
-        if(isModal) showGlobalStudentDisciplineHistory(r.student);
-    };
+    // Cuerpo del Oficio
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.text(`Jipijapa, ${todayStr}`, 20, 40);
+    
+    doc.setFont("helvetica", "bold");
+    doc.text(`PARA: ${inspectorName}`, 20, 50);
+    doc.text(`ASUNTO: Reporte Nº ${r.ticket || '000'} - Conducta Estudiantil`, 20, 56);
+    
+    doc.setFont("helvetica", "normal");
+    const cuerpoTexto = `Estimado Inspector General:\n\nPor medio de la presente, informo que en fecha ${r.date}, a las ${r.time}, el estudiante ${r.student}, perteneciente al curso ${course}, presentó una conducta que contraviene las normas de convivencia institucional.\n\nMotivo del comportamiento del estudiante: ${r.desc}. Cabe señalar que este tipo de comportamiento afecta el normal desarrollo de las actividades académicas, así como el ambiente de respeto y sana convivencia que se promueve dentro de la institución, por lo que resulta necesario su debido seguimiento.\n\nSe remite el presente reporte para que se tomen las medidas correspondientes según el reglamento vigente.`;
+    
+    // Ajuste de texto automático
+    const splitText = doc.splitTextToSize(cuerpoTexto, 170);
+    doc.text(splitText, 20, 70);
+
+    // Firma [1]
+    const finalY = doc.lastAutoTable ? doc.lastAutoTable.finalY + 40 : 150;
+    doc.line(75, finalY, 135, finalY);
+    doc.setFont("helvetica", "bold");
+    doc.text(teacherName, 105, finalY + 7, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.text("Docente", 105, finalY + 12, { align: "center" });
+
+    // Descarga del archivo [9]
+    const nombreArchivo = `Reporte_${r.ticket}_${r.student.replace(/ /g, "_")}.pdf`;
+    const pdfDataUri = doc.output('datauristring');
+const link = document.createElement('a');
+link.href = pdfDataUri;
+link.download = nombreArchivo;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+
+    if(isModal) showGlobalStudentDisciplineHistory(r.student);
+};
 
     window.deleteDisciplineRecord = function(id, course, isModal = false) {
         let targetCourse = course || currentCourseDisciplineName;
@@ -3096,7 +3248,7 @@ function inicializarAsistenciaAutomaticamente() {
    LÓGICA DEL MÓDULO DE ASISTENCIA (INTEGRADA A LA CARGA CSV)
    ========================================= */
 
-const textosAsistencia = ["Sin marcar", "Presente", "Faltó", "Justificó"];
+const textosAsistencia = ["Sin marcar", "Presente", "Faltó", "Justificó", "Atraso", "Fuga"];
 window.cursoActualAsistencia = ""; 
 window.fechaActualAsistencia = "";
 // baseDeDatosAsistencia la construiremos usando studentsData 
@@ -3220,7 +3372,7 @@ function abrirCursoAsistencia(curso, fechaSeleccionada = null) {
 
         btn.onclick = function() {
             let estadoActual = parseInt(this.dataset.estado);
-            let nuevoEstado = (estadoActual + 1) % 4; 
+            let nuevoEstado = (estadoActual + 1) % 6; 
             
             this.dataset.estado = nuevoEstado;
             this.className = `btn-estado-asistencia estado-${nuevoEstado}`;
@@ -3281,18 +3433,24 @@ function guardarAsistenciaEnMemoria() {
 function calcularEstadisticasAsistenciaDiaria() {
     let botones = document.querySelectorAll('.btn-estado-asistencia');
     let total = botones.length;
-    let presentes = 0, faltas = 0, justificados = 0;
+    let presentes = 0, faltas = 0, justificados = 0, atrasos = 0, fugas = 0;
 
     botones.forEach(btn => {
         let estado = parseInt(btn.dataset.estado);
         if(estado === 1) presentes++;
         if(estado === 2) faltas++;
         if(estado === 3) justificados++;
+        if(estado === 4) atrasos++; // Nuevo: Atraso
+        if(estado === 5) fugas++;   // Nuevo: Fuga
     });
 
-    document.getElementById('stat-dia-asistio').textContent = total > 0 ? Math.round((presentes/total)*100) + "%" : "0%";
-    document.getElementById('stat-dia-falto').textContent = total > 0 ? Math.round((faltas/total)*100) + "%" : "0%";
-    document.getElementById('stat-dia-justifico').textContent = total > 0 ? Math.round((justificados/total)*100) + "%" : "0%";
+    const getPerc = (val) => total > 0 ? Math.round((val/total)*100) + "%" : "0%";
+    
+    document.getElementById('stat-dia-asistio').textContent = getPerc(presentes);
+    document.getElementById('stat-dia-falto').textContent = getPerc(faltas);
+    document.getElementById('stat-dia-justifico').textContent = getPerc(justificados);
+    document.getElementById('stat-dia-atraso').textContent = getPerc(atrasos);
+    document.getElementById('stat-dia-fuga').textContent = getPerc(fugas);
 }
 
 // 6. CÁLCULO: HISTORIAL GLOBAL DEL CURSO
@@ -3311,7 +3469,7 @@ function mostrarEstadisticaGeneralCurso() {
     let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
     let datosCurso = historialGlobal[curso] || {};
 
-    let presentes = 0, faltas = 0, justificados = 0, totalMarcados = 0;
+    let presentes = 0, faltas = 0, justificados = 0, atrasos = 0, fugas = 0, totalMarcados = 0;
 
     Object.keys(datosCurso).forEach(fecha => {
         Object.keys(datosCurso[fecha]).forEach(est => {
@@ -3319,12 +3477,16 @@ function mostrarEstadisticaGeneralCurso() {
             if (estd === 1) { presentes++; totalMarcados++; }
             if (estd === 2) { faltas++; totalMarcados++; }
             if (estd === 3) { justificados++; totalMarcados++; }
+            if (estd === 4) { atrasos++; totalMarcados++; } // Ahora sí sumará
+            if (estd === 5) { fugas++; totalMarcados++; }   // Ahora sí sumará
         });
     });
 
     document.getElementById('stat-hist-asistio').textContent = totalMarcados > 0 ? Math.round((presentes/totalMarcados)*100) + "%" : "0%";
     document.getElementById('stat-hist-falto').textContent = totalMarcados > 0 ? Math.round((faltas/totalMarcados)*100) + "%" : "0%";
     document.getElementById('stat-hist-justifico').textContent = totalMarcados > 0 ? Math.round((justificados/totalMarcados)*100) + "%" : "0%";
+    document.getElementById('stat-hist-atraso').textContent = totalMarcados > 0 ? Math.round((atrasos/totalMarcados)*100) + "%" : "0%";
+    document.getElementById('stat-hist-fuga').textContent = totalMarcados > 0 ? Math.round((fugas/totalMarcados)*100) + "%" : "0%";
 
     // AGREGAR BOTÓN DE EXPORTAR
     let contenedorStats = document.getElementById('btn-volver-stat-curso').parentNode;
@@ -3388,13 +3550,18 @@ function mostrarEstadisticaEstudiante(estudiante) {
 
             let fFaltas = [];
             let fJustif = [];
+            let fAtrasos = []; // Nueva lista para Atrasos
+            let fFugas = [];   // Nueva lista para Fugas
+
 
             // 1. Extraemos las fechas de ese alumno
             Object.keys(datosApp).forEach(fecha => {
-                let estado = datosApp[fecha][nombreAlumno];
-                if (estado === 2) fFaltas.push(fecha); 
-                if (estado === 3) fJustif.push(fecha);
-            });
+    let estado = datosApp[fecha][nombreAlumno];
+    if (estado === 2) fFaltas.push(fecha);
+    if (estado === 3) fJustif.push(fecha);
+    if (estado === 4) fAtrasos.push(fecha); // Recolectar Atrasos
+    if (estado === 5) fFugas.push(fecha);   // Recolectar Fugas
+});
 
             // 2. Ordenamos por MES y DÍA cronológicamente
             const ordenarFechas = (a, b) => {
@@ -3404,33 +3571,41 @@ function mostrarEstadisticaEstudiante(estudiante) {
             };
             fFaltas.sort(ordenarFechas);
             fJustif.sort(ordenarFechas);
+            fAtrasos.sort(ordenarFechas);
+            fFugas.sort(ordenarFechas);
+
 
             // 3. Unimos las fechas con un SALTO DE LÍNEA (<br>)
             let textoFaltas = fFaltas.length > 0 ? fFaltas.join('<br>') : '<span style="color:gray;">Ninguna</span>';
             let textoJustif = fJustif.length > 0 ? fJustif.join('<br>') : '<span style="color:gray;">Ninguna</span>';
+            let textoAtrasos = fAtrasos.length > 0 ? fAtrasos.join('<br>') : '<span style="color:gray;">Ninguno</span>';
+            let textoFugas = fFugas.length > 0 ? fFugas.join('<br>') : '<span style="color:gray;">Ninguna</span>';
 
             // 4. Imprimimos en la cajita
-            cajaFechas.innerHTML = `
-                <div style="margin-top: 15px; padding: 15px; border: 1px solid #e74c3c; border-radius: 8px; background-color: #fff; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
-                    
-                    <h4 style="color: #6b2133; margin: 0 0 10px 0; font-size: 15px; text-transform: uppercase;">Detalle de Inasistencias</h4>
-                    
-                    <div style="font-size: 14px; margin-bottom: 15px;">
-                        <span style="font-weight: bold; color: #c0392b;">❌ FALTAS:</span><br>
-                        <div style="margin-top: 5px; color: #333; line-height: 1.6;">
-                            ${textoFaltas}
-                        </div>
-                    </div>
-
-                    <div style="font-size: 14px;">
-                        <span style="font-weight: bold; color: #d35400;">📝 JUSTIFICADAS:</span><br>
-                        <div style="margin-top: 5px; color: #333; line-height: 1.6;">
-                            ${textoJustif}
-                        </div>
-                    </div>
-
-                </div>
-            `;
+           cajaFechas.innerHTML = `
+<div style="margin-top: 15px; padding: 15px; border: 1px solid var(--primary); border-radius: 8px; background-color: #fff; text-align: center; box-shadow: 0 2px 5px rgba(0,0,0,0.1);">
+    <h4 style="color: #6b2133; margin: 0 0 10px 0; font-size: 15px; text-transform: uppercase;">Detalle de Asistencia Individual</h4>
+    
+    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; text-align: center;">
+        <div>
+            <span style="font-weight: bold; color: #c0392b;">❌ FALTAS:</span><br>
+            <div style="margin-top: 5px; color: #333; font-size: 13px;">${textoFaltas}</div>
+        </div>
+        <div>
+            <span style="font-weight: bold; color: #d35400;">📝 JUSTIF.:</span><br>
+            <div style="margin-top: 5px; color: #333; font-size: 13px;">${textoJustif}</div>
+        </div>
+        <div style="border-top: 1px solid #eee; pt: 10px;">
+            <span style="font-weight: bold; color: #00bcd4;">🕒 ATRASOS:</span><br>
+            <div style="margin-top: 5px; color: #333; font-size: 13px;">${textoAtrasos}</div>
+        </div>
+        <div style="border-top: 1px solid #eee; pt: 10px;">
+            <span style="font-weight: bold; color: #9c27b0;">🏃 FUGAS:</span><br>
+            <div style="margin-top: 5px; color: #333; font-size: 13px;">${textoFugas}</div>
+        </div>
+    </div>
+</div>
+`;
             cajaFechas.style.display = 'block';
         }
     }
@@ -3446,18 +3621,23 @@ function mostrarEstadisticaEstudiante(estudiante) {
     let historialGlobal = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
     let datosCurso = historialGlobal[curso] || {};
 
-    let presentes = 0, faltas = 0, justificados = 0, totalMarcados = 0;
+    let presentes = 0, faltas = 0, justificados = 0, atrasos = 0, fugas = 0, totalMarcados = 0;
 
     Object.keys(datosCurso).forEach(fecha => {
-        let estd = datosCurso[fecha][estudiante];
-        if (estd === 1) { presentes++; totalMarcados++; }
-        if (estd === 2) { faltas++; totalMarcados++; }
-        if (estd === 3) { justificados++; totalMarcados++; }
-    });
+    let estd = datosCurso[fecha][estudiante];
+    if (estd === 1) { presentes++; totalMarcados++; }
+    if (estd === 2) { faltas++; totalMarcados++; }
+    if (estd === 3) { justificados++; totalMarcados++; }
+    if (estd === 4) { atrasos++; totalMarcados++; } // Añadir esto
+    if (estd === 5) { fugas++; totalMarcados++; }   // Añadir esto
+});
+
 
     document.getElementById('stat-hist-asistio').textContent = totalMarcados > 0 ? Math.round((presentes/totalMarcados)*100) + "%" : "0%";
     document.getElementById('stat-hist-falto').textContent = totalMarcados > 0 ? Math.round((faltas/totalMarcados)*100) + "%" : "0%";
     document.getElementById('stat-hist-justifico').textContent = totalMarcados > 0 ? Math.round((justificados/totalMarcados)*100) + "%" : "0%";
+    document.getElementById('stat-hist-atraso').textContent = totalMarcados > 0 ? Math.round((atrasos/totalMarcados)*100) + "%" : "0%"; // Añadir esto
+    document.getElementById('stat-hist-fuga').textContent = totalMarcados > 0 ? Math.round((fugas/totalMarcados)*100) + "%" : "0%";   // Añadir esto
 }
 
 // 8. VOLVER AL MENÚ
@@ -3537,19 +3717,23 @@ function exportarAsistenciaMes() {
         let asistencias = 0;
         let faltas = 0;
         let justificadas = 0;
+        let atrasos = 0;
+        let fugas = 0;
         
         fechasDelMes.forEach(fecha => {
             let estado = datosCurso[fecha][est];
             let marca = "-";
-            if (estado === 1) { marca = "A"; asistencias++; }
+            if (estado === 1) { marca = "P"; asistencias++; }
             else if (estado === 2) { marca = "F"; faltas++; }
             else if (estado === 3) { marca = "J"; justificadas++; }
+            else if (estado === 4) { marca = "A"; atrasos++; } 
+            else if (estado === 5) { marca = "Fu"; fugas++; }   
             htmlTabla += `<td style="padding: 4px;">${marca}</td>`;
         });
         htmlTabla += `</tr>`;
         
         // Agregamos al estudiante y sus totales al mensaje de WhatsApp
-        textoWhatsApp += `-${est}: ${asistencias} Asist. | ${faltas} Faltas | ${justificadas} Justif.%0A`;
+        textoWhatsApp += `-${est}: ${asistencias} Asist. | ${faltas} Faltas | ${justificadas} Justif. | ${atrasos} Atrasos | ${fugas} Fugas%0A`;
     });
 
     // Leer el teléfono del Docente configurado en la app
@@ -3640,9 +3824,11 @@ function exportarAsistenciaMesPDF() {
         let fila = [limpiarTexto(est)];
         fechasDelMes.forEach(fecha => {
             let estado = datosCurso[fecha][est];
-            if (estado === 1) fila.push('A'); 
+            if (estado === 1) fila.push('P'); 
             else if (estado === 2) fila.push('F');
             else if (estado === 3) fila.push('J');
+            else if (estado === 4) fila.push('A'); // Nuevo: Atraso
+            else if (estado === 5) fila.push('Fu'); // Nuevo: Fuga
             else fila.push('-'); 
         });
         datosPdf.push(fila);
@@ -3662,12 +3848,14 @@ function exportarAsistenciaMesPDF() {
     let nombreArchivo = `Asistencia_${cursoLimpio}_${nombreMesPalabra}_${anioActual}.pdf`;
     nombreArchivo = nombreArchivo.replace(/ /g, "_");
 
-    // --- CAMBIO 3: El método de salida para Android Studio ---
-    const pdfDataUri = doc.output('datauristring');
-    const link = document.createElement('a');
-    link.href = pdfDataUri;
-    link.download = nombreArchivo; 
-    link.click();
+   // --- CAMBIO 3: Descarga directa con nombre ---
+const pdfDataUri = doc.output('datauristring');
+const link = document.createElement('a');
+link.href = pdfDataUri;
+link.download = nombreArchivo;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
 }
 
 </script>
@@ -3782,7 +3970,8 @@ window.enviarAlertasPerplexity = function() {
 };
 
 // =========================================================================
-// NUEVA FUNCIÓN DE ASISTENCIA CON IA Y FILTRO DE MESES
+// =========================================================================
+// NUEVA FUNCIÓN DE ASISTENCIA CON IA (INCLUYE ATRASOS Y FUGAS)
 // =========================================================================
 window.revisarAsistenciaConIAMeses = function() {
     let course = window.cursoActualAsistencia || window.currentCourseAlertasName;
@@ -3812,29 +4001,41 @@ window.revisarAsistenciaConIAMeses = function() {
         return;
     }
 
+    // 1. Inicializamos con las nuevas categorías
     let resumenAsistencia = {};
     estudiantes.forEach(est => {
-        resumenAsistencia[est] = { presentes: 0, faltas: 0, justificadas: 0, total: 0 };
+        resumenAsistencia[est] = { 
+            presentes: 0, 
+            faltas: 0, 
+            justificadas: 0, 
+            atrasos: 0, 
+            fugas: 0, 
+            total: 0 
+        };
     });
 
+    // 2. Lógica de conteo para los 5 estados
     fechas.forEach(fecha => {
         estudiantes.forEach(est => {
             let estado = datosCurso[fecha][est];
-            if (estado === 1 || estado === 2 || estado === 3) {
+            // Verificamos que el estado exista (del 1 al 5)
+            if (estado >= 1 && estado <= 5) {
                 resumenAsistencia[est].total++;
                 if (estado === 1) resumenAsistencia[est].presentes++;
                 if (estado === 2) resumenAsistencia[est].faltas++;
                 if (estado === 3) resumenAsistencia[est].justificadas++;
+                if (estado === 4) resumenAsistencia[est].atrasos++;
+                if (estado === 5) resumenAsistencia[est].fugas++;
             }
         });
     });
 
-    let prompt = `Actúa como asesor pedagógico. Revisa el reporte de asistencia histórica del curso ${course}`;
+    let prompt = `Actúa como asesor pedagógico y experto en gestión de aula. Revisa el reporte de asistencia detallado del curso ${course}`;
     
     const nombresDeMeses = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre'];
     if (mesesSeleccionados.length > 0) {
         let nombresSeleccionados = mesesSeleccionados.map(m => nombresDeMeses[m - 1]);
-        prompt += ` (Filtrado para los meses: ${nombresSeleccionados.join(', ')})`;
+        prompt += ` (Periodo: ${nombresSeleccionados.join(', ')})`;
     }
     prompt += `:\n\n`;
 
@@ -3844,23 +4045,29 @@ window.revisarAsistenciaConIAMeses = function() {
         let datos = resumenAsistencia[est];
         if (datos.total > 0) {
             hayDatos = true;
-            let porcentaje = Math.round(((datos.presentes + datos.justificadas) / datos.total) * 100);
-            prompt += `- ${est}: ${porcentaje}% de asistencia (${datos.faltas} faltas y ${datos.justificadas} faltas justificadas, en un total de ${datos.total} clases).\n`;
+            // El porcentaje considera Presentes, Justificadas y Atrasos como "asistencia"
+            let porcentaje = Math.round(((datos.presentes + datos.justificadas + datos.atrasos) / datos.total) * 100);
+            
+            // Enviamos todo el desglose a la IA
+            prompt += `- ${est}: ${porcentaje}% asistencia. Detalle: ${datos.presentes} Presencias, ${datos.faltas} Faltas, ${datos.justificadas} Justificadas, ${datos.atrasos} Atrasos y ${datos.fugas} Fugas (Total días: ${datos.total}).\n`;
         }
     });
 
     if (!hayDatos) {
-        alert("Aunque hay fechas creadas en este periodo, aún no se ha marcado la asistencia de ningún estudiante.");
+        alert("No hay datos suficientes para analizar.");
         return;
     }
 
-    prompt += "\nGenera un resumen para el tutor del curso redactado en texto aquí. Señala a los estudiantes que tengan un porcentaje de asistencia preocupante, haz un analisis general, y luego has el perfil de caso para cada estudiante en un párrafo y sugiere 2 estrategias para mejorar el presentismo en el aula, deja saltos de linea por cada estudiante, se puntual con lo dicho y dime al final qué piensas tras el análisis.";
+    prompt += "\nINSTRUCCIONES DE ANÁLISIS:\n";
+    prompt += "1. Identifica alumnos con riesgo de deserción (muchas faltas).\n";
+    prompt += "2. Identifica problemas de puntualidad (atrasos recurrentes).\n";
+    prompt += "3. Identifica problemas conductuales graves (fugas de clase).\n";
+    prompt += "4. Redacta un perfil de caso breve para cada estudiante y sugiere 2 estrategias personalizadas según su historial (ej: si tiene fugas, sugerir tutoría conductual; si tiene atrasos, hablar con representantes sobre transporte/horario), los estidiantes con asistencia perfecta, solo dí que asistencia perfecta.\n";
+    prompt += "5. Haz un resumen general del clima del curso y dime qué piensas tras este análisis. recuerda ser breve en el caso de cada estudiante";
 
-    // --- NUEVO FINAL PARA ABRIR CLAUDE EN NAVEGADOR POR DEFECTO ---
     const urlOriginal = `https://claude.ai/new?q=${encodeURIComponent(prompt)}`;
     abrirEnlaceExterno(urlOriginal);
 };
-
 
 // =========================================================================
     // SISTEMA DE PROTECCIÓN POR LICENCIA (KEY.CSV)
@@ -4159,11 +4366,14 @@ function imprimirNominaPDF() {
     });
 
     const nombreLimpio = cursoNominaSeleccionado.replace(/ /g, "_");
-    const pdfDataUri = doc.output('datauristring');
-    const link = document.createElement('a');
-    link.href = pdfDataUri;
-    link.download = `Nomina_${nombreLimpio}.pdf`;
-    link.click();
+const nombreArchivo = `Nomina_${nombreLimpio}.pdf`;
+const pdfDataUri = doc.output('datauristring');
+const link = document.createElement('a');
+link.href = pdfDataUri;
+link.download = nombreArchivo;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
 }
 
 // ==========================================
@@ -4355,13 +4565,15 @@ function imprimirDirectivaPDF() {
     let finalY = doc.lastAutoTable.finalY + 30;
     doc.line(75, finalY, 135, finalY);
     doc.text("Firma del Tutor/a", 105, finalY + 5, { align: "center" });
-
-    const nombreLimpio = `Directiva_${tipoActual}_${curso}`.replace(/ /g, "_");
-    const pdfDataUri = doc.output('datauristring');
-    const link = document.createElement('a');
-    link.href = pdfDataUri;
-    link.download = `${nombreLimpio}.pdf`;
-    link.click();
+const nombreLimpio = `Directiva_${tipoActual}_${curso}`.replace(/ /g, "_");
+const nombreArchivo = `${nombreLimpio}.pdf`;
+const pdfDataUri = doc.output('datauristring');
+const link = document.createElement('a');
+link.href = pdfDataUri;
+link.download = nombreArchivo;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
 }
 
 // ==========================================
@@ -4600,15 +4812,16 @@ function imprimirAtencion(tipo) {
     doc.text("Firma del Docente", 105, finalY + 5, { align: "center" });
 
     // 7. Descargar el archivo
-    const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
-    const nombreArchivo = `${tituloDoc.replace(/ /g, "_")}_${dateStr}.pdf`;
-    
-    const pdfDataUri = doc.output('datauristring');
-    const link = document.createElement('a');
-    link.href = pdfDataUri;
-    link.download = nombreArchivo;
-    link.click();
+  const now = new Date();
+const dateStr = now.toISOString().split('T');
+const nombreArchivo = `${tituloDoc.replace(/ /g, "_")}_${dateStr}.pdf`;
+const pdfDataUri = doc.output('datauristring');
+const link = document.createElement('a');
+link.href = pdfDataUri;
+link.download = nombreArchivo;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
 }
 
 function cargarHistorialAtencion(tipo) {
@@ -4904,14 +5117,15 @@ function descargarCobroPDF() {
     let finalY = doc.lastAutoTable.finalY + 15;
     doc.setFontSize(13);
     doc.setFont("helvetica", "bold");
-    doc.text(`TOTAL RECAUDADO GENERAL: $${totalAcumulado.toFixed(2)}`, 14, finalY);
-    
-    const nombreArchivo = `Cobros_${cobroActualContexto.motivo.replace(/ /g, "_")}_${cobroActualContexto.curso}.pdf`;
-    const pdfDataUri = doc.output('datauristring');
-    const link = document.createElement('a');
-    link.href = pdfDataUri;
-    link.download = nombreArchivo;
-    link.click();
+   doc.text(`TOTAL RECAUDADO GENERAL: $${totalAcumulado.toFixed(2)}`, 14, finalY);
+const nombreArchivo = `Cobros_${cobroActualContexto.motivo.replace(/ /g, "_")}_${cobroActualContexto.curso.replace(/ /g, "_")}.pdf`;
+const pdfDataUri = doc.output('datauristring');
+const link = document.createElement('a');
+link.href = pdfDataUri;
+link.download = nombreArchivo;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
 }
 
 // ==========================================
@@ -4991,6 +5205,456 @@ function importarDatosJSON(event) {
     // Leer el archivo como texto para pasarlo al JSON.parse
     reader.readAsText(file);
 }
+
+
+
+// 1. Llenar el select al cargar la pestaña
+function prepararPestañaResumen() {
+    const dbCursos = obtenerCursosYEstudiantes(); // Esta es la lógica que ya funciona en Cobros
+    const select = document.getElementById('resumen-curso');
+    if(!select) return;
+    
+    select.innerHTML = '<option value="">-- Seleccione un curso --</option>';
+    Object.keys(dbCursos).forEach(c => {
+        select.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+}
+
+// 2. Mostrar estudiantes al seleccionar curso
+function renderizarEstudiantesResumen() {
+    const curso = document.getElementById('resumen-curso').value;
+    const contenedor = document.getElementById('resumen-lista-estudiantes');
+    contenedor.innerHTML = '';
+    
+    if (!curso) return;
+
+    const dbCursos = obtenerCursosYEstudiantes();
+    let estudiantes = dbCursos[curso] || [];
+    estudiantes.sort().forEach(est => {
+        const btn = document.createElement('button');
+        btn.className = 'tab-btn';
+        btn.style.width = '100%';
+        btn.style.textAlign = 'left';
+        btn.style.marginBottom = '5px';
+        btn.innerText = "👤 " + est;
+        btn.onclick = () => abrirDetalleResumen(est, curso);
+        contenedor.appendChild(btn);
+    });
+}
+
+// 3. Calcular y mostrar el resumen en el modal [3]
+function abrirDetalleResumen(estudiante, curso) {
+    document.getElementById('resumenModalNombre').innerText = estudiante;
+
+    const listadoTareas = pendingTasks[curso] || [];
+    
+    // FILTROS: Tareas Pendientes por motivo [2, 3]
+    const pendientes = listadoTareas.filter(t => t.student === estudiante && !t.hecha);
+    const pendNoPresento = pendientes.filter(t => t.status === "No presentó").length;
+    const pendIncompleto = pendientes.filter(t => t.status === "Incompleto").length;
+    const pendFalto = pendientes.filter(t => t.status === "Faltó").length;
+
+    // FILTROS: Tareas Entregadas con atraso por motivo original [4]
+    const hechas = listadoTareas.filter(t => t.student === estudiante && t.hecha);
+    const hechaNoPresento = hechas.filter(t => t.status === "No presentó").length;
+    const hechaIncompleto = hechas.filter(t => t.status === "Incompleto").length;
+    const hechaFalto = hechas.filter(t => t.status === "Faltó").length;
+
+    const reportes = (disciplineRecords[curso] || []).filter(r => r.student === estudiante);
+
+    // LÓGICA DE ASISTENCIA COMPLETA (5 ESTADOS) [5, 6]
+    const historialAsistencia = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    const datosCurso = historialAsistencia[curso] || {};
+    let p = 0, f = 0, j = 0, a = 0, fug = 0, totalDias = 0;
+
+    Object.keys(datosCurso).forEach(fecha => {
+        const estado = datosCurso[fecha][estudiante];
+        if (estado === 1) p++;     // Presente
+        if (estado === 2) f++;     // Faltó
+        if (estado === 3) j++;     // Justificó
+        if (estado === 4) a++;     // Atraso
+        if (estado === 5) fug++;   // Fuga
+        if (estado > 0) totalDias++; 
+    });
+
+    const calcularPerc = (valor) => totalDias > 0 ? Math.round((valor / totalDias) * 100) : 0;
+    const porcAsistencia = totalDias > 0 ? Math.round(((p + j + a) / totalDias) * 100) : 0;
+
+    document.getElementById('resumenDetalleCuerpo').innerHTML = `
+        <div style="margin-bottom: 10px;">
+            <p><strong>📚 Tareas Pendientes (${pendientes.length}):</strong></p>
+            <ul style="font-size: 12px; margin-top: -5px; color: #e74c3c;">
+                <li>No presentó: ${pendNoPresento} | Incompletas: ${pendIncompleto} | Por falta: ${pendFalto}</li>
+            </ul>
+            
+            <p><strong>✔️ Presentadas con atraso (${hechas.length}):</strong></p>
+            <ul style="font-size: 12px; margin-top: -5px; color: #27ae60;">
+                <li>Eran "No presentó": ${hechaNoPresento} | Eran "Incompletas": ${hechaIncompleto} | Eran "Por falta": ${hechaFalto}</li>
+            </ul>
+            
+            <p><strong>⚠️ Reportes Disciplina:</strong> <span style="color:orange">${reportes.length}</span></p>
+        </div>
+        <hr>
+        <div style="background: #fdf2f4; padding: 10px; border-radius: 8px; font-size: 13px;">
+            <p><strong>✅ Porcentaje Asistencia: ${porcAsistencia}%</strong> (Total ${totalDias} días)</p>
+            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 12px;">
+                <span>❌ Faltas: ${f} (${calcularPerc(f)}%)</span>
+                <span>🕒 Atrasos: ${a} (${calcularPerc(a)}%)</span>
+                <span>📝 Justif.: ${j} (${calcularPerc(j)}%)</span>
+                <span>🏃 Fugas: ${fug} (${calcularPerc(fug)}%)</span>
+            </div>
+        </div>
+       <div style="display: flex; gap: 10px; margin-top: 15px;">
+    <button class="btn-success" style="flex: 1; padding: 12px; background-color: #74aa9c; border: none; color: white; border-radius: 4px; font-weight: bold; cursor: pointer;"
+    onclick="enviarInformeEstudianteIA('${estudiante.replace(/'/g, "\\'")}', '${curso}')">
+    Redactar Informe
+    </button>
+    
+    <button class="btn-info" style="flex: 1; padding: 12px; background-color: var(--primary); border: none; color: white; border-radius: 4px; font-weight: bold; cursor: pointer;"
+    onclick="descargarResumenEstudiantePDF('${estudiante.replace(/'/g, "\\'")}', '${curso}')">
+    Descargar PDF
+    </button>
+</div>
+    `;
+    document.getElementById('resumenModal').style.display = 'flex';
+}
+
+// Nueva función para enviar la redacción a ChatGPT
+function enviarInformeEstudianteIA(estudiante, curso) {
+    const docente = localStorage.getItem('teacher_name') || "[Nombre del Docente]";
+    const listadoTareas = pendingTasks[curso] || [];
+    
+    const pendientes = listadoTareas.filter(t => t.student === estudiante && !t.hecha);
+    const hechas = listadoTareas.filter(t => t.student === estudiante && t.hecha);
+    const reportes = (disciplineRecords[curso] || []).filter(r => r.student === estudiante);
+
+    // Conteo de Asistencia para el prompt [8, 9]
+    const historialAsistencia = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    const datosCurso = historialAsistencia[curso] || {};
+    let p = 0, f = 0, j = 0, a = 0, fug = 0, total = 0;
+    Object.keys(datosCurso).forEach(fecha => {
+        const estado = datosCurso[fecha][estudiante];
+        if (estado === 1) p++; if (estado === 2) f++; if (estado === 3) j++; if (estado === 4) a++; if (estado === 5) fug++;
+        if (estado > 0) total++;
+    });
+    const porcAsistencia = total > 0 ? Math.round(((p + j + a) / total) * 100) : 0;
+
+    let prompt = `Asume el rol de docente de la Unidad Educativa Particular "García Moreno". Redacta un informe integral del estudiante ${estudiante} en el curso ${curso}.
+    
+    DATOS DE ASISTENCIA:
+    - Porcentaje: ${porcAsistencia}% (sobre ${total} días registrados).
+    - Detalle: ${p} asistencias, ${f} faltas, ${j} justificaciones, ${a} atrasos y ${fug} fugas de clase.
+    
+    REPORTE ACADÉMICO DETALLADO (TAREAS):
+    - Tareas aún pendientes (${pendientes.length}):`;
+    
+    // Se incluye el ticketCode para mayor especificidad [3]
+    pendientes.forEach(t => prompt += `\n  * [Ticket: ${t.ticketCode}] "${t.task}" (Motivo: ${t.status})`);
+    
+    prompt += `\n- Tareas ya entregadas con atraso (${hechas.length}):`;
+    hechas.forEach(t => prompt += `\n  * [Ticket: ${t.ticketCode}] "${t.task}" (Motivo original del atraso: ${t.status})`);
+    
+    if (reportes.length > 0) {
+        prompt += `\n\nREPORTE DISCIPLINARIO: ${reportes.length} incidente(s). Detalles: ${reportes.map(r => r.desc).join(". ")}.`;
+    }
+
+    prompt += `\n\nInstrucciones para la redacción:
+    1. Saludo formal dirigido al representante.
+    2. Analiza el comportamiento basándote en los 5 estados de asistencia (destacando atrasos o fugas si existen).
+    3. Analiza el cumplimiento académico mencionando los códigos de las tareas. Reconoce el esfuerzo por las tareas ya entregadas (aunque sea con atraso) y urge la entrega de las pendientes, pero muestra en viñeta por separado cada tarea separado con un salto de línea.
+    4. Firma como: Atentamente, ${docente}, salto de línea, Docente.
+    5. No uses negritas en la respuesta.`;
+
+    window.open(`https://chatgpt.com/?q=${encodeURIComponent(prompt)}`, '_blank');
+}
+
+
+function PortfolioLink() {
+    let url = document.getElementById('PortfolioLinkInput').value.trim();
+    if (url === "") {
+        alert("No hay ningún enlace de portafolio guardado.");
+        return;
+    }
+    // Asegurar que el navegador reconozca el enlace como URL
+    if (!url.startsWith('http://') && !url.startsWith('https://')) {
+        url = 'https://' + url;
+    }
+    window.open(url, '_blank');
+}
+
+
+function descargarResumenEstudiantePDF(estudiante, curso) {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const teacherName = localStorage.getItem('teacher_name') || "[Nombre del Docente]";
+    const today = new Date().toLocaleDateString('es-ES');
+
+    // 1. OBTENCIÓN DE DATOS (Misma lógica que el prompt de IA)
+    const listadoTareas = pendingTasks[curso] || [];
+    const pendientes = listadoTareas.filter(t => t.student === estudiante && !t.hecha);
+    const hechas = listadoTareas.filter(t => t.student === estudiante && t.hecha);
+    const reportes = (disciplineRecords[curso] || []).filter(r => r.student === estudiante);
+
+    // Conteo de Asistencia (Lógica original de 37.docx)
+    const historialAsistencia = JSON.parse(localStorage.getItem('historial_asistencia_app')) || {};
+    const datosCurso = historialAsistencia[curso] || {};
+    let p = 0, f = 0, j = 0, a = 0, fug = 0, totalDias = 0;
+    Object.keys(datosCurso).forEach(fecha => {
+        const estado = datosCurso[fecha][estudiante];
+        if (estado === 1) p++; if (estado === 2) f++; if (estado === 3) j++; if (estado === 4) a++; if (estado === 5) fug++;
+        if (estado > 0) totalDias++;
+    });
+    const porcAsistencia = totalDias > 0 ? Math.round(((p + j + a) / totalDias) * 100) : 0;
+    const calcularPerc = (valor) => totalDias > 0 ? Math.round((valor / totalDias) * 100) : 0;
+
+    // 2. ENCABEZADO
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(107, 33, 51); // Color institucional #6b2133
+    doc.text('RESUMEN INTEGRAL DEL ESTUDIANTE DEL AÑO LECTIVO', 105, 15, { align: "center" });
+    doc.setFontSize(14);
+    doc.setTextColor(0, 0, 0);
+    doc.text(estudiante, 105, 23, { align: "center" });
+    doc.setFontSize(10);
+    doc.text(`Curso: ${curso} | Fecha de reporte: ${today}`, 105, 28, { align: "center" });
+    doc.line(20, 32, 190, 32);
+
+    // 3. SECCIÓN ASISTENCIA (Diseño idéntico al de 37.docx)
+    doc.setDrawColor(107, 33, 51);
+    doc.setFillColor(253, 242, 244); // Fondo rosado suave
+    doc.roundedRect(20, 38, 170, 42, 3, 3, 'FD');
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(11);
+    doc.text(`Porcentaje de Asistencia - (Total ${totalDias} días)`, 25, 46);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    // Fila 1: Presentes y Faltas
+    doc.text(`Días Presentes: ${p} (${calcularPerc(p)}%)`, 30, 55);
+    doc.text(`Faltas: ${f} (${calcularPerc(f)}%)`, 110, 55);
+    // Fila 2: Atrasos y Justificativos
+    doc.text(`Atrasos: ${a} (${calcularPerc(a)}%)`, 30, 64);
+    doc.text(`Justificativos: ${j} (${calcularPerc(j)}%)`, 110, 64);
+    // Fila 3: Fugas
+    doc.text(`Fugas: ${fug} (${calcularPerc(fug)}%)`, 30, 73);
+
+    let y = 92; // Coordinador vertical para el resto de la información
+
+    // 4. REPORTE ACADÉMICO DETALLADO (TAREAS PENDIENTES)
+    doc.setFontSize(12);
+    doc.setFont("helvetica", "bold");
+    doc.text(`REPORTE ACADÉMICO DETALLADO (TAREAS):`, 20, y);
+    y += 6;
+    doc.setFontSize(10);
+    doc.text(`- Tareas pendientes con inconsistencias (${pendientes.length}):`, 25, y);
+    y += 6;
+
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    if (pendientes.length === 0) {
+        doc.text("   * No hay tareas pendientes.", 30, y);
+        y += 6;
+    } else {
+        pendientes.forEach(t => {
+            let linea = `* Código: ${t.ticketCode} "${t.task}" (Motivo: ${t.status})`;
+            let splitLinea = doc.splitTextToSize(linea, 160);
+            doc.text(splitLinea, 30, y);
+            y += (splitLinea.length * 5);
+            if (y > 270) { doc.addPage(); y = 20; }
+        });
+    }
+    y += 4;
+
+    // 5. TAREAS ENTREGADAS CON ATRASO
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text(`- Tareas entregadas fuera de la fecha establecida (${hechas.length}):`, 25, y);
+    y += 6;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    if (hechas.length === 0) {
+        doc.text("   * No hay registros de tareas entregadas con atraso.", 30, y);
+        y += 6;
+    } else {
+        hechas.forEach(t => {
+            let linea = `* Código: ${t.ticketCode} "${t.task}" (Motivo original del atraso: ${t.status})`;
+            let splitLinea = doc.splitTextToSize(linea, 160);
+            doc.text(splitLinea, 30, y);
+            y += (splitLinea.length * 5);
+            if (y > 270) { doc.addPage(); y = 20; }
+        });
+    }
+    y += 6;
+
+    // 6. REPORTE DISCIPLINARIO
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    if (reportes.length > 0) {
+        let discHeader = `REPORTE DISCIPLINARIO: ${reportes.length} incidente(s).`;
+        doc.text(discHeader, 20, y);
+        y += 6;
+        doc.setFont("helvetica", "normal");
+        reportes.forEach(r => {
+            let detalle = `Detalle: ${r.desc} (Fecha: ${r.date})`;
+            let splitDetalle = doc.splitTextToSize(detalle, 160);
+            doc.text(splitDetalle, 25, y);
+            y += (splitDetalle.length * 5);
+            if (y > 270) { doc.addPage(); y = 20; }
+        });
+    } else {
+        doc.text("REPORTE DISCIPLINARIO: Sin incidentes registrados.", 20, y);
+        y += 10;
+    }
+
+    // 7. PIE DE PÁGINA Y FIRMA
+    y += 20;
+    if (y > 260) { doc.addPage(); y = 40; }
+    doc.line(75, y, 135, y);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "bold");
+    doc.text(teacherName, 105, y + 7, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.text("Docente", 105, y + 12, { align: "center" });
+
+    // DESCARGA
+   const nombreArchivo = `Resumen_Detallado_${estudiante.replace(/ /g, "_")}.pdf`;
+const pdfDataUri = doc.output('datauristring');
+const link = document.createElement('a');
+link.href = pdfDataUri;
+link.download = nombreArchivo;
+document.body.appendChild(link);
+link.click();
+document.body.removeChild(link);
+}
+
+
+function verHorarioTabla() {
+    const contenedor = document.getElementById('contenedorTablaHorario');
+    const schedule = JSON.parse(localStorage.getItem('horarios_cursos')) || {};
+    
+    // Encabezado de la tabla con ancho mínimo para scroll en móvil
+    let html = `<table style="min-width: 650px; width:100%; border-collapse: collapse; font-size: 12px; text-align: center; border: 1px solid #ddd; background: white;">
+        <thead style="background: var(--primary); color: white; position: sticky; top: 0;">
+            <tr>
+                <th style="padding: 10px; border: 1px solid #ddd; width: 120px;">Hora / Período</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Lunes</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Martes</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Miércoles</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Jueves</th>
+                <th style="padding: 10px; border: 1px solid #ddd;">Viernes</th>
+            </tr>
+        </thead>
+        <tbody>`;
+
+    // CAMBIO CLAVE: Recorremos dinámicamente todas las llaves de timeSlots
+    Object.keys(timeSlots).sort((a, b) => a - b).forEach(h => {
+        const slotInfo = timeSlots[h];
+        html += `<tr>
+            <td style="padding: 8px; border: 1px solid #ddd; background: #f9f9f9; font-weight: bold; font-size: 11px;">
+                ${slotInfo.label}
+            </td>`;
+
+            // Recorrer los días de la semana (Lunes a Viernes)
+            for (let d = 1; d <= 5; d++) {
+                let cursoAsignado = "";
+                for (let curso in schedule) {
+                    if (schedule[curso][d] == h) {
+                        cursoAsignado = curso;
+                        break;
+                    }
+                }
+                
+                // Aplicamos color crema si hay clase asignada
+                html += `<td style="padding: 6px; border: 1px solid #ddd; background: ${cursoAsignado ? 'var(--surface)' : 'white'}; font-weight: ${cursoAsignado ? 'bold' : 'normal'};">
+                    ${cursoAsignado || '<span style="color:#ccc;">-</span>'}
+                </td>`;
+            }
+        html += `</tr>`;
+    }); // Aquí cerramos el forEach correctamente
+
+    html += `</tbody></table>`;
+    
+    // Configuración de scroll para móviles
+    contenedor.style.overflowX = "auto";
+    contenedor.style.webkitOverflowScrolling = "touch";
+    contenedor.innerHTML = html;
+    
+    document.getElementById('horarioClasesModal').style.display = 'flex';
+}
+
+
+
+window.openTimeConfigModal = function() {
+    renderTimeConfigList();
+    document.getElementById('timeConfigModal').style.display = 'flex';
+};
+
+function renderTimeConfigList() {
+    const container = document.getElementById('timeConfigList');
+    container.innerHTML = '';
+    // Ordenamos las horas para que aparezcan en orden
+    Object.keys(timeSlots).sort((a,b) => a-b).forEach(id => {
+        const slot = timeSlots[id];
+        const div = document.createElement('div');
+        div.className = 'task-item';
+        div.style.marginBottom = '10px';
+        div.innerHTML = `
+            <div style="flex:1;">
+                <input type="text" class="slot-label" data-id="${id}" value="${slot.label}" style="font-weight:bold; margin-bottom:5px;">
+                <div style="display:flex; gap:5px;">
+                    <input type="time" class="slot-start" data-id="${id}" value="${minutosAHoras(slot.start)}">
+                    <input type="time" class="slot-end" data-id="${id}" value="${minutosAHoras(slot.end)}">
+                </div>
+            </div>
+            <button class="btn-delete" onclick="deleteTimeSlot(${id})">🗑️</button>
+        `;
+        container.appendChild(div);
+    });
+}
+
+function minutosAHoras(min) {
+    const h = Math.floor(min / 60).toString().padStart(2, '0');
+    const m = (min % 60).toString().padStart(2, '0');
+    return `${h}:${m}`;
+}
+
+window.addTimeSlotRow = function() {
+    const ids = Object.keys(timeSlots).map(Number);
+    const nextId = ids.length > 0 ? Math.max(...ids) + 1 : 1;
+    timeSlots[nextId] = { label: `Hora ${nextId}`, start: 435, end: 475 }; // Default 7:15
+    renderTimeConfigList();
+};
+
+window.deleteTimeSlot = function(id) {
+    if(confirm("¿Seguro que deseas eliminar este período de tiempo? Se borrará de todos los cursos.")) {
+        delete timeSlots[id];
+        renderTimeConfigList();
+    }
+};
+
+window.saveTimeConfig = function() {
+    const newSlots = {};
+    document.querySelectorAll('.slot-label').forEach(input => {
+        const id = input.getAttribute('data-id');
+        const startVal = document.querySelector(`.slot-start[data-id="${id}"]`).value;
+        const endVal = document.querySelector(`.slot-end[data-id="${id}"]`).value;
+        
+        const [sh, sm] = startVal.split(':').map(Number);
+        const [eh, em] = endVal.split(':').map(Number);
+        
+        newSlots[id] = {
+            label: input.value,
+            start: sh * 60 + sm,
+            end: eh * 60 + em
+        };
+    });
+    timeSlots = newSlots;
+    localStorage.setItem('time_slots_config', JSON.stringify(timeSlots));
+    alert("Estructura de horas actualizada. La página se recargará para aplicar los cambios.");
+    location.reload(); // Recargamos para que buildScheduleConfig y las vistas se actualicen
+};
+
+
 
 </script>
 
