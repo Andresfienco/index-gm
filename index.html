@@ -444,7 +444,7 @@
 
     <div style="display: flex; align-items: center; justify-content: center; min-height: 90px; gap: 0px;">
 
-       
+        
 
         <h2 style="margin: 0; font-size: 1.3rem; line-height: 1.2; text-align: center; width: 100%;" 
             onclick="alert('Este sistema ha sido desarrollado por: ⛩️ Andrés Fienco\n© 2026 Andrés Fienco. Todos los derechos reservados.\nQueda prohibida la reproducción total o parcial sin autorización.\nPor motivos de seguridad y privacidad, los datos se almacenan localmente. \nAl desinstalar la aplicación, se eliminarán permanentemente.')"
@@ -463,8 +463,8 @@
         <button class="tab-btn" onclick="switchTab('missingTasks')">3. Tareas</button>
         <button class="tab-btn" onclick="switchTab('disciplineView')">4. Reportes</button>
         <button class="tab-btn" onclick="switchTab('asistenciaView')">5. Asistencia</button>
-     
-        <button class="tab-btn" onclick="switchTab('resumenView')">Resumen</button>
+ 
+        <button class="tab-btn" onclick="switchTab('resumenView')">7. Resumen</button>
     </div>
     </br>
     <div style="display: flex; justify-content: center; margin-bottom: 25px; margin-top: -10px;">
@@ -653,6 +653,7 @@
         <button class="btn-action" style="background-color: var(--secondary);" onclick="prepararDirectiva('ESTUDIANTES')">DIR. ESTUDIANTES</button>
         <button class="btn-action" style="background-color: var(--secondary);" onclick="prepararDirectiva('PADRES DE FAMILIA')">DIR. PADRES</button>
         <button class="btn-action" style="background-color: var(--secondary);" onclick="abrirCobros()">COBROS</button>
+        <button class="btn-action" style="background-color: var(--secondary);" onclick="abrirRoles()">ROLES</button>
     </div>
 
     <div id="sub-nomina" style="display:none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 15px;">
@@ -796,6 +797,42 @@
         <h4 style="margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: var(--primary);">Registros Guardados</h4>
         <div id="historial-cobros-botones" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;"></div>
     </div>
+<div id="sub-roles" style="display:none; margin-top: 25px; border-top: 2px dashed #ccc; padding-top: 15px;">
+    <h3 style="color: var(--primary); text-align: center; margin-bottom: 15px;">📝 Asignación de Roles</h3>
+    <button class="btn-info" onclick="iniciarNuevoRol()" style="width: 100%; margin-bottom: 15px; font-size: 14px;">+ Nueva Asignación de Roles</button>
+    
+    <div id="roles-form" style="background: #fdf2f4; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+        <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Motivo / Actividad:</label>
+        <input type="text" id="rol-motivo" placeholder="Ej: Comisiones de Clase, Líderes de Proyecto..." style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
+        
+        <label style="font-weight: bold; font-size: 13px; color: var(--primary);">Curso:</label>
+        <select id="rol-curso" style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px; margin-bottom: 15px;">
+            <option value="">-- Seleccione --</option>
+        </select>
+        
+        <button class="btn-action" style="width: 100%; padding: 12px;" onclick="generarTablaRoles()">Generar Tabla de Roles</button>
+    </div>
+
+    <div id="roles-tabla-container" style="display: none; margin-bottom: 20px;">
+        <div style="max-height: 400px; overflow-y: auto; border: 1px solid #ddd; border-radius: 8px;">
+            <table style="width: 100%; border-collapse: collapse;">
+                <thead style="position: sticky; top: 0; z-index: 1;">
+                    <tr style="background-color: var(--primary); color: white;">
+                        <th style="padding: 10px; text-align: left;">Estudiante</th>
+                        <th style="padding: 10px; text-align: center;">Rol / Responsabilidad</th>
+                    </tr>
+                </thead>
+                <tbody id="roles-tbody"></tbody>
+            </table>
+        </div>
+        <div style="display: flex; gap: 10px; margin-top: 15px;">
+            <button class="btn-info" style="flex: 1; padding: 12px; background-color: var(--secondary);" onclick="descargarRolesPDF()">🖨️ Descargar PDF</button>
+        </div>
+    </div>
+
+    <h4 style="margin-top: 25px; border-bottom: 1px solid #ccc; padding-bottom: 5px; color: var(--primary);">Registros de Roles Guardados</h4>
+    <div id="historial-roles-botones" style="display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px;"></div>
+</div>
 </div>
 
 
@@ -907,8 +944,15 @@ Ej: Criterio 1, Criterio 2, Criterio 3, Criterio 4, Criterio 5..." style="width:
                     
                     <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #8E3A2D; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarEjemplosPerplexity()">Generar Ejemplos con AI</button>
                     <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #1B4D3E; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarEjemplosPerplexityt()">Generar Teoría con AI</button>
-
-                    <button class="btn-success" style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #2D4B4B; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold;" onclick="enviarBitacoraPerplexity()">Generar Bitácora con AI</button>
+                    <button id="btnSorteoAzar" class="btn-success" 
+    style="width: 100%; padding: 12px; font-size: 16px; margin-top: 10px; background-color: #D48C45; color: white; border: none; border-radius: 5px; cursor: pointer; font-weight: bold; user-select: none; -webkit-user-select: none;"
+    onmousedown="startPressSorteo()" 
+    onmouseup="endPressSorteo()" 
+    onmouseleave="cancelPressSorteo()"
+    ontouchstart="startPressSorteo()" 
+    ontouchend="endPressSorteo()">
+    Escoger Estudiante sin AI
+</button>
                 </div>
  <div id="examenesManager" style="display:none; margin-top: 15px;">
                     <h4 style="color: var(--secondary); border-bottom: 2px solid var(--surface); padding-bottom: 5px;">Ejemplo de Exámenes</h4>
@@ -1561,7 +1605,149 @@ function generarRubricaConIA() {
 }
 
 
+// --- LÓGICA DEL SORTEO DE ESTUDIANTES ---
+// --- VARIABLES PARA EL MANEJO DE PULSACIÓN LARGA ---
+let sorteoTimer;
+let isLongPress = false;
 
+window.startPressSorteo = function() {
+    isLongPress = false;
+    sorteoTimer = setTimeout(() => {
+        isLongPress = true;
+        abrirHistorialSorteo();
+    }, 800); // 800 milisegundos para detectar pulsación larga
+};
+
+window.endPressSorteo = function() {
+    clearTimeout(sorteoTimer);
+    if (!isLongPress) {
+        escogerEstudianteAzar(); // Si fue clic corto, ejecuta el sorteo
+    }
+};
+
+window.cancelPressSorteo = function() {
+    clearTimeout(sorteoTimer);
+};
+
+// --- FUNCIÓN PRINCIPAL DEL SORTEO (ACTUALIZADA) ---
+window.escogerEstudianteAzar = function() {
+    let curso = currentCourseEjemplosName || currentCoursePlanificacionName || currentCourseAlertasName;
+    if (!curso) {
+        let activeCourseBtn = document.querySelector('.course-btn.active');
+        if (activeCourseBtn) curso = activeCourseBtn.textContent.trim();
+    }
+
+    if (!curso || !studentsData[curso]) {
+        alert("Por favor, selecciona un curso primero.");
+        return;
+    }
+
+    // 1. Cargar historial de este curso
+    let historialSorteo = JSON.parse(localStorage.getItem('sorteo_registro_' + curso)) || [];
+    
+    // 2. Filtrar estudiantes que NO han salido [4, 5]
+    const poolDisponible = studentsData[curso].filter(est => !historialSorteo.some(h => h.nombre === est));
+
+    if (poolDisponible.length === 0) {
+        alert("Todos los estudiantes de este curso ya han salido. Limpia el historial para empezar de nuevo.");
+        return;
+    }
+
+    // 3. Iniciar el conteo visual [6]
+    const overlay = document.getElementById('countdownOverlay');
+    const displayNum = document.getElementById('countdownNumber');
+    const displayResult = document.getElementById('selectedStudentResult');
+    const closeBtn = document.getElementById('closeCountdownBtn');
+
+    overlay.style.display = 'flex';
+    displayNum.style.display = 'block';
+    displayResult.innerText = '';
+    closeBtn.style.display = 'none';
+
+    let count = 10;
+    displayNum.innerText = count;
+
+    const timer = setInterval(() => {
+        count--;
+        if (count >= 0) {
+            displayNum.innerText = count;
+        } else {
+            clearInterval(timer);
+            displayNum.style.display = 'none';
+            
+            // 4. Seleccionar ganador del pool disponible
+            const elegido = poolDisponible[Math.floor(Math.random() * poolDisponible.length)];
+            
+            // 5. Guardar en el historial con fecha y hora
+            const now = new Date();
+            historialSorteo.push({
+                nombre: elegido,
+                fecha: now.toLocaleDateString(),
+                hora: now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+            });
+            localStorage.setItem('sorteo_registro_' + curso, JSON.stringify(historialSorteo));
+
+            // 6. Mostrar resultado
+            displayResult.innerHTML = `<span style="color: #2ecc71; font-size: 20px;">ESTUDIANTE SELECCIONADO:</span><br><br> ${elegido} <br><p style="font-size:14px; color:#aaa;"></p>`;
+            closeBtn.style.display = 'block';
+        }
+    }, 500); // Un poco más rápido para dar emoción
+};
+
+// --- FUNCIÓN PARA VER EL HISTORIAL ---
+window.abrirHistorialSorteo = function() {
+    let curso = currentCourseEjemplosName || currentCoursePlanificacionName || currentCourseAlertasName;
+    if (!curso) {
+        let activeCourseBtn = document.querySelector('.course-btn.active');
+        if (activeCourseBtn) curso = activeCourseBtn.textContent.trim();
+    }
+
+    if (!curso) return;
+
+    document.getElementById('sorteoCursoTitulo').innerText = "Historial: " + curso;
+    const listaDiv = document.getElementById('sorteoHistorialLista');
+    let historial = JSON.parse(localStorage.getItem('sorteo_registro_' + curso)) || [];
+
+    if (historial.length === 0) {
+        listaDiv.innerHTML = '<p style="color:#999; text-align:center;">Nadie ha salido sorteado todavía.</p>';
+    } else {
+        // --- CAMBIO: Se añade el botón X en cada fila ---
+        listaDiv.innerHTML = historial.map((h, i) => `
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 0; border-bottom: 1px solid #eee;">
+                <div style="font-size: 13px;">
+                    <strong>${i+1}. ${h.nombre}</strong> <br>
+                    <span style="color:#888; font-size: 11px;">📅 ${h.fecha} - ⏰ ${h.hora}</span>
+                </div>
+                <button onclick="eliminarEntradaSorteo(${i})" 
+                        style="background: none; border: none; color: #e74c3c; font-weight: bold; cursor: pointer; font-size: 16px; padding: 5px;" 
+                        title="Eliminar de este registro">✖</button>
+            </div>
+        `).join('');
+    }
+    document.getElementById('sorteoHistorialModal').style.display = 'flex';
+};
+
+// --- FUNCIÓN PARA BORRAR EL HISTORIAL ---
+window.eliminarEntradaSorteo = function(index) {
+    let curso = currentCourseEjemplosName || currentCoursePlanificacionName || currentCourseAlertasName;
+    if (!curso) {
+        let activeCourseBtn = document.querySelector('.course-btn.active');
+        if (activeCourseBtn) curso = activeCourseBtn.textContent.trim();
+    }
+
+    let historial = JSON.parse(localStorage.getItem('sorteo_registro_' + curso)) || [];
+    
+    if (confirm(`¿Quieres eliminar a ${historial[index].nombre} del registro para que pueda volver a salir en el sorteo?`)) {
+        // 1. Borrar solo ese elemento del array
+        historial.splice(index, 1);
+        
+        // 2. Guardar el nuevo historial en localStorage
+        localStorage.setItem('sorteo_registro_' + curso, JSON.stringify(historial));
+        
+        // 3. Refrescar la lista visualmente
+        abrirHistorialSorteo();
+    }
+};
 
 
 
@@ -1845,17 +2031,40 @@ function inicializarAsistenciaAutomaticamente() {
                 </div>
             `;
 
-            const daysHTML = Object.entries(daysMap).map(([id, name]) => {
-                const isChecked = savedDays.hasOwnProperty(id), savedHour = isChecked ? savedDays[id] : "";
-                let hourOptions = '<option value="">Sin hora asignada</option>';
-Object.keys(timeSlots).sort((a,b) => a-b).forEach(h => {
-    hourOptions += `<option value="${h}" ${savedHour == h ? 'selected' : ''}>${timeSlots[h].label}</option>`;
-});
+           const daysHTML = Object.entries(daysMap).map(([id, name]) => {
+    const isChecked = savedDays.hasOwnProperty(id);
+    const hours = isChecked ? (Array.isArray(savedDays[id]) ? savedDays[id] : [savedDays[id]]) : [""];
+    
+    // Generar opciones de horas
+    let hourOptions = '<option value="">Selecciona hora</option>';
+    Object.keys(timeSlots).sort((a,b) => a-b).forEach(h => {
+        hourOptions += `<option value="${h}">${timeSlots[h].label}</option>`;
+    });
 
+    // Crear un contenedor con los selects guardados
+    let hoursControlsHTML = `<div class="hours-list" id="hours-list-${course}-${id}" style="display: ${isChecked ? 'flex' : 'none'}; flex-direction:column; gap:5px; margin-left:10px;">`;
+    hours.forEach(savedHour => {
+        hoursControlsHTML += `
+            <div style="display:flex; gap:5px; align-items:center;">
+                <select class="hour-select" data-course="${course}" data-day="${id}" style="width: auto; padding: 5px;">
+                    ${hourOptions.replace(`value="${savedHour}"`, `value="${savedHour}" selected`)}
+                </select>
+                <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">✕</button>
+            </div>`;
+    });
+    // Botón + para agregar más horas
+    hoursControlsHTML += `<button type="button" class="btn-info" style="padding:2px 8px; width:fit-content; font-size:10px;" onclick="addHourDropdown('${course}', '${id}')">+ Agregar hora</button></div>`;
 
-
-                return `<div class="day-row"><label><input type="checkbox" class="day-cb" value="${id}" data-course="${course}" ${isChecked ? 'checked' : ''} onchange="toggleHourSelect(this)">${name}</label><select class="hour-select" data-course="${course}" data-day="${id}" style="display: ${isChecked ? 'block' : 'none'}; width: auto; padding: 5px;">${hourOptions}</select></div>`;
-            }).join('');
+    return `
+        <div class="day-row" style="align-items: flex-start; margin-bottom:10px;">
+            <label style="min-width:90px;">
+                <input type="checkbox" class="day-cb" value="${id}" data-course="${course}" ${isChecked ? 'checked' : ''} 
+                onchange="document.getElementById('hours-list-${course}-${id}').style.display = this.checked ? 'flex' : 'none'">
+                ${name}
+            </label>
+            ${hoursControlsHTML}
+        </div>`;
+}).join('');
             
             container.innerHTML += `
             <div class="course-schedule">
@@ -1990,11 +2199,19 @@ Object.keys(timeSlots).sort((a,b) => a-b).forEach(h => {
         coursePhones = {};
         
         document.querySelectorAll('.day-cb:checked').forEach(cb => {
-            const course = cb.getAttribute('data-course'), day = cb.value;
-            const select = document.querySelector(`.hour-select[data-course="${course}"][data-day="${day}"]`);
-            if (!courseSchedules[course]) courseSchedules[course] = {};
-            courseSchedules[course][day] = select ? select.value : "";
-        });
+    const course = cb.getAttribute('data-course');
+    const day = cb.value;
+    if (!courseSchedules[course]) courseSchedules[course] = {};
+    
+    // Recolectar todas las horas de los selects de ese día
+    const selectedHours = [];
+    document.querySelectorAll(`.hour-select[data-course="${course}"][data-day="${day}"]`).forEach(sel => {
+        if(sel.value) selectedHours.push(sel.value);
+    });
+    
+    // Guardamos como Array para permitir varias horas [5]
+    courseSchedules[course][day] = selectedHours;
+});
         
         document.querySelectorAll('.course-phone-input').forEach(input => {
             const course = input.getAttribute('data-course');
@@ -2064,9 +2281,21 @@ Object.keys(timeSlots).sort((a,b) => a-b).forEach(h => {
                 if(topicOverrides[uniqueId] && topicOverrides[uniqueId].deleted) continue;
                 if(topicOverrides[uniqueId] && topicOverrides[uniqueId].title) topicStr = topicOverrides[uniqueId].title;
 
-                const hour = schedule[dayNum.toString()], itemData = { course: courseName, topic: topicStr, id: uniqueId, courseIdx: i };
-                if (hour) { if (!scheduledTopics[hour]) scheduledTopics[hour] = []; scheduledTopics[hour].push(itemData); } 
-                else { unassignedTopics.push(itemData); }
+                 const hours = schedule[dayNum.toString()];
+        // Convertimos a Array para manejar tanto una como varias horas (compatibilidad)
+        const hoursArray = Array.isArray(hours) ? hours : [hours];
+
+        hoursArray.forEach(h => {
+            if (h) {
+                const itemData = { course: courseName, topic: topicStr, id: uniqueId, courseIdx: i };
+                if (!scheduledTopics[h]) scheduledTopics[h] = [];
+                scheduledTopics[h].push(itemData);
+            } else {
+                // Si el día está marcado pero no tiene hora, va a temas sin hora
+                const itemData = { course: courseName, topic: topicStr, id: uniqueId, courseIdx: i };
+                unassignedTopics.push(itemData);
+            }
+        });
             }
         }
 
@@ -4240,7 +4469,7 @@ function validarContrasenaMaestra() {
 // 1. CONTROL DE VISTAS (Navegación del Portafolio)
 // 1. CONTROL DE VISTAS (Navegación del Portafolio)
 function mostrarSubPortafolio(id) {
-    const subs = ['sub-nomina', 'sub-convocatoria', 'sub-atencion', 'sub-directiva', 'sub-cobros']; // <-- Se agregó sub-cobros aquí
+    const subs = ['sub-nomina', 'sub-convocatoria', 'sub-atencion', 'sub-directiva', 'sub-cobros', 'sub-roles']; 
     subs.forEach(s => { 
         if(document.getElementById(s)) document.getElementById(s).style.display = 'none'; 
     });
@@ -4946,64 +5175,81 @@ function renderizarFilasCobro(estudiantes) {
     const tbody = document.getElementById('cobros-tbody');
     tbody.innerHTML = '';
     let sumaTotal = 0;
+    const meta = cobroActualContexto.meta;
 
     estudiantes.forEach(est => {
         const pagado = parseFloat(cobroActualContexto.pagos[est]) || 0;
         sumaTotal += pagado;
-        const metaAlcanzada = pagado >= cobroActualContexto.meta;
-        
+
+        // Definición de estados
+        const pagadoExacto = pagado === meta;
+        const pagadoDamas = pagado > meta;
+        const cambio = pagadoDamas ? (pagado - meta).toFixed(2) : 0;
+
+        // Determinar estilo de fila
+        let rowBg = 'transparent';
+        if (pagadoExacto) rowBg = '#d4edda'; // Verde
+        if (pagadoDamas) rowBg = '#fff3cd';  // Amarillo
+
         const tr = document.createElement('tr');
         tr.style.borderBottom = "1px solid #eee";
-        // Si pagó el total, se sombrea verde clarito
-        tr.style.backgroundColor = metaAlcanzada ? '#d4edda' : 'transparent';
+        tr.style.backgroundColor = rowBg;
         
         tr.innerHTML = `
             <td style="padding: 10px;">
-                <span class="est-nombre" style="${metaAlcanzada ? 'text-decoration: line-through; color: #155724; font-weight: bold;' : 'color: #333;'}">
+                <span class="est-nombre" style="${pagadoExacto || pagadoDamas ? 'text-decoration: line-through; color: #155724; font-weight: bold;' : 'color: #333;'}">
                     ${est}
                 </span>
             </td>
-            <td style="padding: 10px;">
-                <input type="number" step="0.01" class="pago-input" data-estudiante="${est}" value="${pagado || ''}" 
-                       style="width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px; text-align:center;"
-                       oninput="registrarAbonoCobro(this)">
+            <td style="padding: 10px; text-align: center;">
+                <input type="number" step="0.01" class="pago-input" data-estudiante="${est}" value="${pagado || ''}"
+                    style="width: 80px; padding: 6px; border: 1px solid #ccc; border-radius: 4px; text-align:center;"
+                    oninput="registrarAbonoCobro(this)">
+                <div class="cambio-label" style="font-size: 10px; color: #856404; font-weight: bold; margin-top: 4px;">
+                    ${pagadoDamas ? 'Dar Cambio: $' + cambio : ''}
+                </div>
             </td>
         `;
         tbody.appendChild(tr);
     });
-    
     document.getElementById('cobros-total').innerText = `Total Recaudado: $${sumaTotal.toFixed(2)}`;
 }
 
 // Función que se dispara con cada tecla (Guarda al instante)
 function registrarAbonoCobro(input) {
     const estudiante = input.getAttribute('data-estudiante');
+    const meta = cobroActualContexto.meta;
     let abono = parseFloat(input.value) || 0;
-    
-    // Guardar en la variable local
-    cobroActualContexto.pagos[estudiante] = abono;
-    
-    // Guardar inmediatamente en memoria
-    guardarCobroEnMemoria();
 
-    // Actualizar color y tachado (Feedback visual sin recargar toda la tabla)
+    // 1. Actualizar objeto global
+    cobroActualContexto.pagos[estudiante] = abono;
+
+    // 2. GUARDADO AUTOMÁTICO INSTANTÁNEO
+    guardarCobroEnMemoria(); 
+
+    // 3. Actualización Visual Dinámica
     const tr = input.closest('tr');
     const spanNombre = tr.querySelector('.est-nombre');
-    const metaAlcanzada = abono >= cobroActualContexto.meta;
+    const labelCambio = tr.querySelector('.cambio-label');
 
-    if (metaAlcanzada) {
-        tr.style.backgroundColor = '#d4edda';
+    if (abono === meta) {
+        tr.style.backgroundColor = '#d4edda'; // Verde: Pago exacto
         spanNombre.style.textDecoration = 'line-through';
         spanNombre.style.color = '#155724';
-        spanNombre.style.fontWeight = 'bold';
+        labelCambio.innerText = '';
+    } else if (abono > meta) {
+        tr.style.backgroundColor = '#fff3cd'; // Amarillo: Se pasó
+        spanNombre.style.textDecoration = 'line-through';
+        spanNombre.style.color = '#155724';
+        labelCambio.innerText = 'Dar Cambio: $' + (abono - meta).toFixed(2);
     } else {
-        tr.style.backgroundColor = 'transparent';
+        tr.style.backgroundColor = 'transparent'; // Pendiente
         spanNombre.style.textDecoration = 'none';
         spanNombre.style.color = '#333';
-        spanNombre.style.fontWeight = 'normal';
+        labelCambio.innerText = '';
     }
 
-    // Actualizar cuenta total
+    // Actualizar cuenta total en pantalla
     let sumaTotal = 0;
     Object.values(cobroActualContexto.pagos).forEach(val => sumaTotal += (parseFloat(val) || 0));
     document.getElementById('cobros-total').innerText = `Total Recaudado: $${sumaTotal.toFixed(2)}`;
@@ -5127,6 +5373,171 @@ document.body.appendChild(link);
 link.click();
 document.body.removeChild(link);
 }
+
+
+
+
+
+let rolesActualContexto = null;
+
+function abrirRoles() {
+    mostrarSubPortafolio('sub-roles');
+    const dbCursos = obtenerCursosYEstudiantes(); // [5]
+    const selectCurso = document.getElementById('rol-curso');
+    selectCurso.innerHTML = '<option value="">-- Seleccione --</option>';
+    Object.keys(dbCursos).forEach(c => {
+        selectCurso.innerHTML += `<option value="${c}">${c}</option>`;
+    });
+    renderBotonesHistorialRoles();
+}
+
+function iniciarNuevoRol() {
+    rolesActualContexto = null;
+    document.getElementById('rol-motivo').value = "";
+    document.getElementById('rol-curso').value = "";
+    document.getElementById('roles-tabla-container').style.display = 'none';
+}
+
+function generarTablaRoles() {
+    const motivo = document.getElementById('rol-motivo').value.trim();
+    const curso = document.getElementById('rol-curso').value;
+    if (!motivo || !curso) return alert("⚠️ Escribe el motivo y selecciona un curso.");
+
+    const dbCursos = obtenerCursosYEstudiantes(); // [5]
+    let estudiantes = dbCursos[curso] || [];
+    estudiantes = [...new Set(estudiantes)].filter(e => e.toLowerCase() !== curso.toLowerCase()).sort();
+
+    if (!rolesActualContexto || rolesActualContexto.curso !== curso) {
+        rolesActualContexto = { id: Date.now().toString(), motivo, curso, asignaciones: {} };
+        estudiantes.forEach(est => rolesActualContexto.asignaciones[est] = "");
+    } else {
+        rolesActualContexto.motivo = motivo;
+    }
+
+    renderizarFilasRoles(estudiantes);
+    document.getElementById('roles-tabla-container').style.display = 'block';
+    guardarRolEnMemoria();
+}
+
+function renderizarFilasRoles(estudiantes) {
+    const tbody = document.getElementById('roles-tbody');
+    tbody.innerHTML = '';
+    estudiantes.forEach(est => {
+        const rol = rolesActualContexto.asignaciones[est] || "";
+        const tr = document.createElement('tr');
+        tr.style.borderBottom = "1px solid #eee";
+        tr.innerHTML = `
+            <td style="padding: 10px; font-size: 13px;">${est}</td>
+            <td style="padding: 10px;">
+                <input type="text" class="rol-input" data-estudiante="${est}" value="${rol}" 
+                    style="width: 100%; padding: 8px; border: 1px solid #ccc; border-radius: 4px;" 
+                    oninput="registrarRolEstudiante(this)" placeholder="Escribir rol...">
+            </td>
+        `;
+        tbody.appendChild(tr);
+    });
+}
+
+function registrarRolEstudiante(input) {
+    const estudiante = input.getAttribute('data-estudiante');
+    rolesActualContexto.asignaciones[estudiante] = input.value;
+    guardarRolEnMemoria(); // GUARDADO AUTOMÁTICO AL ESCRIBIR
+}
+
+function guardarRolEnMemoria() {
+    if (!rolesActualContexto) return;
+    let historial = JSON.parse(localStorage.getItem('historial_roles_app')) || [];
+    let index = historial.findIndex(h => h.id === rolesActualContexto.id);
+    if (index > -1) historial[index] = rolesActualContexto;
+    else historial.push(rolesActualContexto);
+    localStorage.setItem('historial_roles_app', JSON.stringify(historial));
+    renderBotonesHistorialRoles();
+}
+
+function renderBotonesHistorialRoles() {
+    const contenedor = document.getElementById('historial-roles-botones');
+    contenedor.innerHTML = '';
+    let historial = JSON.parse(localStorage.getItem('historial_roles_app')) || [];
+    historial.forEach(rol => {
+        const btn = document.createElement('button');
+        btn.className = 'btn-action';
+        btn.style.backgroundColor = 'var(--secondary)';
+        btn.style.fontSize = '12px';
+        btn.innerText = `📝 ${rol.motivo} (${rol.curso})`;
+        btn.onclick = () => {
+            rolesActualContexto = rol;
+            document.getElementById('rol-motivo').value = rol.motivo;
+            document.getElementById('rol-curso').value = rol.curso;
+            generarTablaRoles();
+        };
+        contenedor.appendChild(btn);
+    });
+}
+
+function descargarRolesPDF() {
+    if (!rolesActualContexto) {
+        alert("No hay datos para descargar. Por favor, genera la tabla primero.");
+        return;
+    }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const docente = localStorage.getItem('teacher_name') || "Docente";
+    const todayStr = new Date().toLocaleDateString('es-ES');
+
+    // Configuración de fuentes y títulos
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(16);
+    doc.setTextColor(107, 33, 51); // Color institucional [1, 2]
+    doc.text("REGISTRO DE ASIGNACIÓN DE ROLES", 105, 15, { align: "center" });
+
+    doc.setFontSize(11);
+    doc.setTextColor(0, 0, 0);
+    doc.setFont("helvetica", "normal");
+    doc.text(`Docente: ${docente}`, 14, 25);
+    doc.text(`Actividad: ${rolesActualContexto.motivo}`, 14, 31);
+    doc.text(`Curso: ${rolesActualContexto.curso} | Fecha: ${todayStr}`, 14, 37);
+
+    // Preparar los datos de la tabla [3]
+    let dataPDF = Object.keys(rolesActualContexto.asignaciones).sort().map(est => [
+        est, 
+        rolesActualContexto.asignaciones[est] || "---"
+    ]);
+    
+    // Generación de la tabla [3, 4]
+    doc.autoTable({
+        startY: 42,
+        head: [['Estudiante', 'Rol / Responsabilidad']],
+        body: dataPDF,
+        theme: 'grid',
+        headStyles: { fillColor: [5-7], textColor: [8] }, // Color corregido [1]
+        styles: { fontSize: 10, cellPadding: 3 },
+        columnStyles: { 0: { fontStyle: 'bold' } }
+    });
+
+    // Espacio para la firma [9]
+    let finalY = doc.lastAutoTable.finalY + 30;
+    if (finalY > 270) {
+        doc.addPage();
+        finalY = 30;
+    }
+    doc.line(75, finalY, 135, finalY);
+    doc.setFont("helvetica", "bold");
+    doc.text(docente, 105, finalY + 7, { align: "center" });
+    doc.setFont("helvetica", "normal");
+    doc.text("Docente", 105, finalY + 12, { align: "center" });
+
+    // Lógica de descarga compatible con Android [9, 10]
+    const nombreArchivo = `Roles_${rolesActualContexto.motivo.replace(/ /g, "_")}_${rolesActualContexto.curso.replace(/ /g, "_")}.pdf`;
+    const pdfDataUri = doc.output('datauristring');
+    const link = document.createElement('a');
+    link.href = pdfDataUri;
+    link.download = nombreArchivo;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
 
 // ==========================================
 // 7. RESPALDO Y RECUPERACIÓN DE DATOS (BACKUP)
@@ -5555,14 +5966,17 @@ function verHorarioTabla() {
             </td>`;
 
             // Recorrer los días de la semana (Lunes a Viernes)
-            for (let d = 1; d <= 5; d++) {
-                let cursoAsignado = "";
-                for (let curso in schedule) {
-                    if (schedule[curso][d] == h) {
-                        cursoAsignado = curso;
-                        break;
-                    }
-                }
+           for (let d = 1; d <= 5; d++) {
+    let cursoAsignado = "";
+    for (let curso in schedule) {
+        const horasAsignadas = schedule[curso][d];
+        // Verificamos si la hora actual está en la lista de horas del día
+        const tieneClase = Array.isArray(horasAsignadas) ? horasAsignadas.includes(h.toString()) : horasAsignadas == h;
+        if (tieneClase) {
+            cursoAsignado = curso;
+            break;
+        }
+    }
                 
                 // Aplicamos color crema si hay clase asignada
                 html += `<td style="padding: 6px; border: 1px solid #ddd; background: ${cursoAsignado ? 'var(--surface)' : 'white'}; font-weight: ${cursoAsignado ? 'bold' : 'normal'};">
@@ -5654,9 +6068,44 @@ window.saveTimeConfig = function() {
     location.reload(); // Recargamos para que buildScheduleConfig y las vistas se actualicen
 };
 
+window.addHourDropdown = function(course, dayId) {
+    const container = document.getElementById(`hours-list-${course}-${dayId}`);
+    const div = document.createElement('div');
+    div.style = "display:flex; gap:5px; align-items:center;";
+    
+    let hourOptions = '<option value="">Selecciona hora</option>';
+    Object.keys(timeSlots).sort((a,b) => a-b).forEach(h => {
+        hourOptions += `<option value="${h}">${timeSlots[h].label}</option>`;
+    });
 
+    div.innerHTML = `
+        <select class="hour-select" data-course="${course}" data-day="${dayId}" style="width: auto; padding: 5px;">${hourOptions}</select>
+        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; color:red; cursor:pointer; font-weight:bold;">✕</button>
+    `;
+    // Insertar antes del botón +
+    container.insertBefore(div, container.lastElementChild);
+};
 
 </script>
+
+
+<div id="countdownOverlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.95); z-index:10000; color:white; flex-direction:column; align-items:center; justify-content:center; font-family:sans-serif; text-align:center;">
+    <div id="countdownNumber" style="font-size: 150px; font-weight: bold; color: #f2e8d5;">10</div>
+    <div id="selectedStudentResult" style="font-size: 35px; margin-top: 20px; padding: 0 20px; color: #fff; font-weight: bold;"></div>
+    <button id="closeCountdownBtn" onclick="document.getElementById('countdownOverlay').style.display='none'" style="margin-top: 40px; padding: 15px 30px; background: var(--primary); color: white; border: none; border-radius: 8px; font-size: 18px; font-weight: bold; cursor: pointer; display: none;">Cerrar Sorteo</button>
+</div>
+<!-- Modal de Historial de Sorteos -->
+<div id="sorteoHistorialModal" class="modal">
+    <div class="modal-content" style="max-width: 450px;">
+        <button class="close-modal" onclick="document.getElementById('sorteoHistorialModal').style.display='none'">×</button>
+        <h3 style="color: var(--primary); margin-top: 0;">Historial de Salida</h3>
+        <p id="sorteoCursoTitulo" style="font-weight: bold; color: var(--secondary);"></p>
+        <div id="sorteoHistorialLista" style="max-height: 300px; overflow-y: auto; text-align: left; margin-bottom: 20px; border: 1px solid #eee; padding: 10px; border-radius: 5px;">
+            <!-- Los nombres saldrán aquí -->
+        </div>
+        <button class="btn-delete" style="width: 100%; padding: 12px; font-size: 14px;" onclick="borrarHistorialSorteo()">🗑️ Limpiar Historial de este Curso</button>
+    </div>
+</div>
 
 </body>
 </html>
